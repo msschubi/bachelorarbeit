@@ -3,7 +3,6 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class loadData {
@@ -13,6 +12,57 @@ public class loadData {
     }
 
     public loadData(String source, String dest) {
+
+    }
+
+    /*
+     * Liest saemtliche Art von Datein in ein Bytearray ein, dabei kann aus Performancegruenden die readsize groß gewaehlt werden und die gewuenschte Groeße der
+     * Daten dann in Blocksize angegeben werden
+     * 
+     * @param source Pfad zur Datei (Dateiname wenn im gleichen Ordner)
+     * 
+     * @param readSize Größe in welcher die Daten eingelesen werden sollen in Bytes (Größer = schneller)
+     * 
+     * @param blockSize Speichergröße der Daten in Bytes
+     */
+    public static LinkedList<byte[]> loadDataInByteArray(String source, int readSize, int blockSize)
+    {
+        LinkedList<byte[]> list = new LinkedList<byte[]>();
+        try {
+            FileInputStream fis = new FileInputStream(source);
+            DataInputStream inStream = new DataInputStream(fis);
+            byte[] dataInBytes;
+
+            while (inStream.available() > 0) {
+                dataInBytes = new byte[readSize];
+                inStream.read(dataInBytes, 0, readSize);
+                list = getSizedBlock(list, dataInBytes, blockSize);
+            }
+            inStream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    /*
+     * Schreibt Daten in eine Datei
+     * @param destination Zielpfad
+     * @param dataInByteArray 
+     */
+    public static void writeData(String destination, LinkedList<byte[]> dataInByteArray)
+    {
+        File targetFile = new File(destination);
+        try {
+            DataOutputStream outStream = new DataOutputStream(new FileOutputStream(targetFile));
+            while (!dataInByteArray.isEmpty()) {
+                outStream.write(dataInByteArray.pollFirst());
+            }
+            outStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -30,7 +80,6 @@ public class loadData {
     {
         if ((block.length % blockSize) != 0) {
             System.out.println("Blocksize falsch gewählt");
-            
             return null;
         }
 
@@ -49,45 +98,7 @@ public class loadData {
 
     public static void main(String[] args)
     {
-
-        try {
-            File targetFile = new File("stud22.jpg");
-
-            FileInputStream fis = new FileInputStream("stud.jpg");
-            DataInputStream inStream = new DataInputStream(fis);
-            LinkedList<byte[]> list = new LinkedList<byte[]>();
-
-            DataOutputStream outStream = new DataOutputStream(new FileOutputStream(targetFile));
-            double timestamp1 = System.currentTimeMillis();
-            byte[] b;
-            int counter = 0;
-            System.out.println("los");
-            while (inStream.available() > 0) {
-                b = new byte[512];
-                inStream.read(b, 0, 512);
-                list = getSizedBlock(list, b, 4);
-                // list.add(b);
-            }
-
-            while (!list.isEmpty()) {
-                outStream.write(list.pollFirst());
-            }
-
-            double timestamp2 = System.currentTimeMillis();
-
-            // double timestamp3 = System.currentTimeMillis();
-
-            System.out.println((timestamp2 - timestamp1) / 1000);
-            // System.out.println((timestamp3-timestamp2)/1000);
-
-            inStream.close();
-            outStream.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // System.out.println(file.exists());
+        LinkedList<byte[]> list = loadDataInByteArray("stud.jpg", 512, 4);
+        writeData("stud2.jpg", list);
     }
-
 }
