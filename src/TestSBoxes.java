@@ -58,23 +58,63 @@ public class TestSBoxes {
        67, 71, 75, 79, 83, 87, 91, 95, 99, 103, 107, 111, 115, 119, 123, 127
    };
    
-   public static int setBit(int pos, int value) {
-       int bit = 1<<pos;
-       return value | bit;
+   /*
+    * Setzt/entfernt ein Bit an der gewuenschten Stelle einer Zahl
+    * @param pos Position die manipuliert werden soll
+    * @param value Wert der manipuliert werden soll
+    * @param bit 1 oder 0, je nachdem welches Bit gesetzt werden soll
+    * @return manipulierter Wert
+    */
+   public static int setBit(int pos, int value, int bit) {
+       int flag = 1<<pos;
+       return bit == 1 ? (value | flag) : (value & (~flag)) ;
    }
    
+   /*
+    * Gibt zurueck ob Bit an abgefragter Stelle gesetzt ist
+    */
    public static int getBit(int pos, int value) {
        int offset = 1<<pos;
-       return (value & offset)>0?1:0;
+       return (value & offset) > 0 ? 1 : 0;
    }
    
-   public int[] setIPbits(int[] value, int pos) {
-       int aPos = pos/32;
-       int nPos = pos%32;
-       if(getBit(nPos,value[aPos])>0) {
-           value[aPos] = getBit(nPos,value[aPos]);
-       }
-       return value;
+   /*
+    * Setzt Bit bis Pos 0-127, aufgeteilt in 4*32 Bit Array
+    */
+//   public static int[] setIPbits(int[] value, int pos) {
+//       int arrayPos = pos/32;
+//       int nPos = pos%32;
+//       
+//       if(getBit(nPos,value[arrayPos])==0) {
+//           value[arrayPos] = setBit(nPos,value[arrayPos]);
+//       }
+//       return value;
+//   }
+   
+   /*
+    * Gibt zurueck ob Bit an Pos 0-127 gesetzt ist
+    */
+//   public static int getIPbit(int[] value, int pos) {
+//       int arrayPos = pos/32;
+//       int offset = 1<<(pos%32);
+//       return (value[arrayPos] & offset)>0?1:0; 
+//   }
+   
+   public static void swapPosition(int pos1, int pos2, int[] array) {
+       int arrayPos1 = pos1/32;
+       int arrayPos2 = pos2/32;
+       
+       int temp = getBit(pos1%32,array[arrayPos1]);
+       
+       array[arrayPos1] = setBit(pos1%32, array[arrayPos1], getBit(pos2%32,array[arrayPos2]));
+       array[arrayPos2] = setBit(pos2%32, array[arrayPos2], temp);
+       
+       System.out.println("p1:\t\tp2:");
+       System.out.println();
+       System.out.println(pos1+"\t\t"+pos2);
+       System.out.println(pos1/32+"/"+pos1%32+"\t\t"+pos2/32+"/"+pos2%32);
+       System.out.println("------------------------");
+       System.out.println();
    }
    
     public static void main(String[] args)
@@ -85,9 +125,26 @@ public class TestSBoxes {
         p[2] = 3;
         p[3] = 4;
         
-        int xyz = 1;
-        for(int i=31; i>=0; i--) {
-            System.out.print(getBit(i,xyz));
+//        setIPbits(p, 126);
+        
+//        p = swapPosition(2, IPtable[2], p);
+
+        
+        for(int i=0; i<128; i++) {
+            swapPosition(i,IPtable[i],p);
+//            for(int x:p) {
+//                System.out.print(x+" \t");
+//            }
+//            System.out.println();
+        }
+        
+        for(int i=0; i<128; i++) {
+            swapPosition(i,FPtable[i],p);
+        }
+        
+
+        for(int i:p) {
+            System.out.println(i);
         }
         
 //        int p = 1;
