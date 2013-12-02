@@ -1,5 +1,3 @@
-import java.math.BigInteger;
-
 public class TestSBoxes {
 
     static final byte[][] Sbox = new byte[][] { { 3, 8, 15, 1, 10, 6, 5, 11, 14, 13, 4, 2, 7, 0, 9, 12 },/* S0: */
@@ -37,7 +35,7 @@ public class TestSBoxes {
     };
     
     static final byte[] IPtable = new byte[] {
-        0, 32, 64,  96,  1, 33, 65,  97,  2, 34, 66,  98,  3, 35, 67,  99,
+        0, 32, 64,  96,  1, 33, 65,  97,  2, 34, 66,  98,  3, 35, 67,  99, //16
         4, 36, 68, 100,  5, 37, 69, 101,  6, 38, 70, 102,  7, 39, 71, 103,
         8, 40, 72, 104,  9, 41, 73, 105, 10, 42, 74, 106, 11, 43, 75, 107,
        12, 44, 76, 108, 13, 45, 77, 109, 14, 46, 78, 110, 15, 47, 79, 111,
@@ -75,133 +73,57 @@ public class TestSBoxes {
     */
    public static int getBit(int pos, int value) {
        int offset = 1<<pos;
-       return (value & offset) > 0 ? 1 : 0;
+       return (value & offset) != 0 ? 1 : 0;
+   }
+ 
+   public static void setArrayBit(int posIn,int posOut, int[] in, int[] out) {  
+       int posOutArr = posOut/32;
+       out[posOutArr] = setBit(posOut%32, out[posOutArr], getBit(posIn%32, in[posIn/32]));
    }
    
-   /*
-    * Setzt Bit bis Pos 0-127, aufgeteilt in 4*32 Bit Array
-    */
-//   public static int[] setIPbits(int[] value, int pos) {
-//       int arrayPos = pos/32;
-//       int nPos = pos%32;
-//       
-//       if(getBit(nPos,value[arrayPos])==0) {
-//           value[arrayPos] = setBit(nPos,value[arrayPos]);
-//       }
-//       return value;
-//   }
+   public static int[] initialPermutation(int[] in) {
+       int [] out = new int[4];
+       
+       for(int i=0; i<128; i++) {
+           setArrayBit(IPtable[i], i, in, out);
+       }
+       return out;
+   }
    
-   /*
-    * Gibt zurueck ob Bit an Pos 0-127 gesetzt ist
-    */
-//   public static int getIPbit(int[] value, int pos) {
-//       int arrayPos = pos/32;
-//       int offset = 1<<(pos%32);
-//       return (value[arrayPos] & offset)>0?1:0; 
-//   }
-   
-   public static void swapPosition(int pos1, int pos2, int[] array) {
-       int arrayPos1 = pos1/32;
-       int arrayPos2 = pos2/32;
+   public static int[] finalPermutation(int[] in) {
+       int [] out = new int[4];
        
-       int temp = getBit(pos1%32,array[arrayPos1]);
-       
-       array[arrayPos1] = setBit(pos1%32, array[arrayPos1], getBit(pos2%32,array[arrayPos2]));
-       array[arrayPos2] = setBit(pos2%32, array[arrayPos2], temp);
-       
-       System.out.println("p1:\t\tp2:");
-       System.out.println();
-       System.out.println(pos1+"\t\t"+pos2);
-       System.out.println(pos1/32+"/"+pos1%32+"\t\t"+pos2/32+"/"+pos2%32);
-       System.out.println("------------------------");
-       System.out.println();
+       for(int i=0; i<128; i++) {
+           setArrayBit(FPtable[i], i, in, out);
+       }
+       return out;
    }
    
     public static void main(String[] args)
     {
-        int [] p = new int[4];
-        p[0] = 1;
-        p[1] = 2;
-        p[2] = 3;
-        p[3] = 4;
+        int [] in = new int[4];
+        in[0] = 1242340;
+        in[1] = 2024234;
+        in[2] = 3242340;
+        in[3] = (1<<31)-1;
         
-//        setIPbits(p, 126);
-        
-//        p = swapPosition(2, IPtable[2], p);
-
-        
-        for(int i=0; i<128; i++) {
-            swapPosition(i,IPtable[i],p);
-//            for(int x:p) {
-//                System.out.print(x+" \t");
-//            }
-//            System.out.println();
-        }
-        
-        for(int i=0; i<128; i++) {
-            swapPosition(i,FPtable[i],p);
-        }
-        
-
-        for(int i:p) {
+        int [] out = initialPermutation(in);
+        for(int i:out) {
             System.out.println(i);
         }
         
-//        int p = 1;
-//        int k = 128128739;
-//        
-//        int pIP = 0;
-//        for(int i=0; i<128; i++) {
-//            if(getBit(i,p)>0) {
-//                pIP = setBit(IPtable[i],pIP);
-//            }
-//        }
-//        System.out.println(pIP);
         
-//        System.out.println(setBit(0,100));
-//        System.out.println();
-//        
-//        int t00, t01, t02, t03, t04, t05, t06, t07, t08, t09, t10;
-//        int t11, t12, t13, t14, t15, t16, t17, t18, t19;
-//        int y0,y1,y2,y3;
-//        
-//        int value = 17185;
-//        int x0,x1,x2,x3;
-//        
-//        x0 = value&15;
-//        value = value >> 4;
-//        x1 = (value&15);
-//        value = value >> 4;
-//        x2 = (value&15);
-//        value = value >> 4;
-//        x3 = (value&15);
-//        
-//        System.out.println(x0+" "+x1+" "+x2+" "+x3);
-//        
-//        
-//        
-//        
-//        
-//        t01 = x1  ^ x2 ;
-//        t02 = x0  | x3 ;
-//        t03 = x0  ^ x1 ;
-//        y3  = t02 ^ t01;
-//        t05 = x2  | y3 ;
-//        t06 = x0  ^ x3 ;
-//        t07 = x1  | x2 ;
-//        t08 = x3  & t05;
-//        t09 = t03 & t07;
-//        y2  = t09 ^ t08;
-//        t11 = t09 & y2 ;
-//        t12 = x2  ^ x3 ;
-//        t13 = t07 ^ t11;
-//        t14 = x1  & t06;
-//        t15 = t06 ^ t13;
-//        y0  =     ~ t15;
-//        t17 = y0  ^ t14;
-//        y1  = t12 ^ t17;
+        System.out.println();
+        for(int a:finalPermutation(out)) {
+            System.out.println(a);
+        }
+        
+        
+        
+        
+        
 
-        // System.out.println(v2);
+
 
     }
 }
