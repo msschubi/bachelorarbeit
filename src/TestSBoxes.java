@@ -67,6 +67,20 @@ public class TestSBoxes {
        int flag = 1<<pos;
        return bit == 1 ? (value | flag) : (value & (~flag)) ;
    }
+   /*
+    * Setzt 4 Bits an eine gewuenschte Stelle einer Zahl
+    * 
+    * @param pos Endposition der 4 Bits (Referenz ist MSB)
+    * @param value Zahl welche mit 4 Bits manipuliert werden soll
+    * @param bits Zahl 0-15 die in value eingefuegt wird
+    */
+   public static int set4Bits(int pos, int value, int bits) {
+       int pattern = -1 & ~(1<<pos) & ~(1<<(pos-1)) & ~(1<<(pos-2)) & ~(1<<(pos-3));
+       value &= pattern; // an die 4 Stellen werden 0en gesetzt
+       //0en werden hier mit den 4 Bits ueberschrieben
+       value |= ((8&bits)<<pos-3) | ((4&bits)<<(pos-3)) | ((2&bits)<<(pos-3)) | ((1&bits)<<(pos-3));
+       return value;
+   }
    
    /*
     * Gibt zurueck ob Bit an abgefragter Stelle gesetzt ist
@@ -101,22 +115,32 @@ public class TestSBoxes {
    
     public static void main(String[] args)
     {
-        int [] in = new int[4];
-        in[0] = 1242340;
-        in[1] = 2024234;
-        in[2] = 3242340;
-        in[3] = (1<<31)-1;
         
-        int [] out = initialPermutation(in);
-        for(int i:out) {
-            System.out.println(i);
-        }
+//        int i = 0xFFFFFFFF;
+        int i = 15;
+        System.out.println(set4Bits(3, i, 10));
+        
+        System.out.println(i);
+//        System.out.println(set4Bits(3, i, 10));
         
         
-        System.out.println();
-        for(int a:finalPermutation(out)) {
-            System.out.println(a);
-        }
+        
+//        int [] in = new int[4];
+//        in[0] = 1242340;
+//        in[1] = 2024234;
+//        in[2] = 3242340;
+//        in[3] = (1<<31)-1;
+//        
+//        int [] out = initialPermutation(in);
+//        for(int i:out) {
+//            System.out.println(i);
+//        }
+//        
+//        
+//        System.out.println();
+//        for(int a:finalPermutation(out)) {
+//            System.out.println(a);
+//        }
         
         
         
