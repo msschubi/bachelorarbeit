@@ -6,8 +6,6 @@
  * @version 03.12.2013
  */
 
-import java.math.BigInteger;
-
 public class TestSBoxes {
 
     /*
@@ -226,46 +224,6 @@ public class TestSBoxes {
     }
 
     public static void main(String[] args) {
-
-        // int i = 0xFFFFFFFF;
-        // int i = 0;
-
-        // int a = 1 << 31;
-        // int b = 1 << 30;
-        // int c = 1 << 29;
-        // int d = 1 << 28;
-        // int konkat = a | b | c | d;
-        // System.out.println("konkat: " + konkat);
-        // // testschleife sbox
-        // int temp = 0;
-        // for (int i = 3; i <= 31; i += 4) {
-        // temp = sBox(i, temp, get4Bits(i, konkat), 0);
-        // }
-        // System.out.println(temp);
-        //
-        // int temp2 = 0;
-        // for (int i = 3; i <= 31; i += 4) {
-        // temp2 = invSBox(i, temp2, get4Bits(i, temp), 0);
-        // }
-        // System.out.println(temp2);
-
-        // int temp = sBox(31,concatValue,get4Bits(31, konkat),0);
-
-        // System.out.println(a);
-        // System.out.println(b);
-        // System.out.println(c);
-        // System.out.println(d);
-        //
-        // System.out.println(i|a|b|c|d);
-        // System.out.println(set4Bits(31, i, 15));
-
-        // System.out.println(i);
-        // System.out.println(set4Bits(3, i, 10));
-
-        // int i = 10212;
-
-        // -1 000 00000 00000 00000 00000 00000
-
         int[] in = new int[4];
         int[] out = new int[4];
         int[] out2 = new int[4];
@@ -287,17 +245,6 @@ public class TestSBoxes {
         for (int i : out2) {
             System.out.print(i + " ");
         }
-        //
-        // int [] out = initialPermutation(in);
-        // for(int i:out) {
-        // System.out.println(i);
-        // }
-        //
-        //
-        // System.out.println();
-        // for(int a:finalPermutation(out)) {
-        // System.out.println(a);
-        // }
 
     }
 }
