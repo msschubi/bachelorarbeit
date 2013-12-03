@@ -21,7 +21,7 @@ public class TestSBoxes {
      * 
      * @return manipulierter Wert
      */
-    public static int setBit(int pos, int value, int bit) {
+    public static int setBit(byte pos, int value, byte bit) {
         int flag = 1 << pos;
         return bit == 1 ? (value | flag) : (value & (~flag));
     }
@@ -37,7 +37,7 @@ public class TestSBoxes {
      * 
      * @return Manipulierte value Variable mit eingefuegten bits
      */
-    public static int set4Bits(int pos, int value, int bits) {
+    public static int set4Bits(byte pos, int value, byte bits) {
         int pattern = -1 & ~(1 << pos) & ~(1 << (pos - 1)) & ~(1 << (pos - 2)) & ~(1 << (pos - 3));
         value &= pattern; // an die 4 Stellen werden 0en gesetzt
         // 0en werden hier mit den 4 Bits ueberschrieben
@@ -55,9 +55,9 @@ public class TestSBoxes {
      * 
      * @return Wert zwischen 0-15
      */
-    public static int get4Bits(int pos, int value) {
+    public static byte get4Bits(byte pos, int value) {
         int ones = 15 << pos - 3;
-        return (value & ones) >>> pos - 3;
+        return (byte) ((value & ones) >>> pos - 3);
     }
 
     /*
@@ -69,9 +69,65 @@ public class TestSBoxes {
      * 
      * @return 1 oder 0, je nachdem welches Bit gesetzt ist
      */
-    public static int getBit(int pos, int value) {
+    public static byte getBit(byte pos, int value) {
         int offset = 1 << pos;
-        return (value & offset) != 0 ? 1 : 0;
+        if ((value & offset) != 0)
+            return 1;
+        else
+            return 0;
+    }
+
+    public static byte getArrayBit(byte pos, int[] array) {
+        return getBit((byte) (pos % 32), array[pos / 32]);
+    }
+
+    public static void setArrayBit(byte pos, int[] array, byte bit) {
+        array[pos / 32] = setBit((byte) (pos % 32), array[pos / 32], bit);
+    }
+
+    /*
+     * Anwendung der linearen Transformation (bzw. IP(LT(FP(x))) ) auf einen
+     * Array
+     * 
+     * @param in Array der Groesse 4 auf den die lin.Trans. angewendet werden
+     * soll
+     * 
+     * @param out Array der Groesse 4 in welchem die lin.Trans. gespeichert wird
+     */
+    public static void linTransform(int[] in, int[] out) {
+        byte tmp;
+        for (byte posOut = 0; posOut <= 127 && posOut >= 0; posOut++) {
+            tmp = 0;
+            // XOR verknuepfung der verschiedenen Werte
+            for (byte posIn : SerpentTables.LTtable[posOut]) {
+                tmp ^= getArrayBit(posIn, in);
+            }
+            // Verknuepften Werte in Array sichern
+            setArrayBit(posOut, out, tmp);
+        }
+    }
+
+    /*
+     * Anwendung der inversen linearen Transformation (bzw. IP(invLT(FP(x))) )
+     * auf einen Array
+     * 
+     * @param in Array der Groesse 4 auf den die inv. lin.Trans. angewendet
+     * werden soll
+     * 
+     * @param out Array der Groesse 4 in welchem die inv. lin.Trans. gespeichert
+     * wird
+     */
+    public static void invLinTransform(int[] in, int[] out) {
+        byte tmp;
+        for (byte posOut = 0; posOut <= 127 && posOut >= 0; posOut++) {
+            tmp = 0;
+            // XOR verknuepfung der verschiedenen Werte
+            for (byte posIn : SerpentTables.LTtableInverse[posOut]) {
+                tmp ^= getArrayBit(posIn, in);
+            }
+            // Verknuepften Werte in Array sichern
+            setArrayBit(posOut, out, tmp);
+        }
     }
 
     /*
@@ -89,9 +145,9 @@ public class TestSBoxes {
      * 
      * @return Variable out mit dem geaendertem Bit an posOut
      */
-    public static void setArrayBit(int posIn, int posOut, int[] in, int[] out) {
+    public static void copyArrayBit(byte posIn, byte posOut, int[] in, int[] out) {
         int posOutArr = posOut / 32;
-        out[posOutArr] = setBit(posOut % 32, out[posOutArr], getBit(posIn % 32, in[posIn / 32]));
+        out[posOutArr] = setBit((byte) (posOut % 32), out[posOutArr], getBit((byte) (posIn % 32), in[posIn / 32]));
     }
 
     /*
@@ -104,8 +160,8 @@ public class TestSBoxes {
     public static int[] initialPermutation(int[] in) {
         int[] out = new int[4];
 
-        for (int i = 0; i < 128; i++) {
-            setArrayBit(SerpentTables.IPtable[i], i, in, out);
+        for (byte i = 0; i < 128; i++) {
+            copyArrayBit(SerpentTables.IPtable[i], i, in, out);
         }
         return out;
     }
@@ -120,8 +176,8 @@ public class TestSBoxes {
     public static int[] finalPermutation(int[] in) {
         int[] out = new int[4];
 
-        for (int i = 0; i < 128; i++) {
-            setArrayBit(SerpentTables.FPtable[i], i, in, out);
+        for (byte i = 0; i < 128; i++) {
+            copyArrayBit(SerpentTables.FPtable[i], i, in, out);
         }
         return out;
     }
@@ -143,7 +199,7 @@ public class TestSBoxes {
      * @return Manipulierte Variable concatValue, in die an pos (MSB) der sBox
      * Wert gesetzt wurde
      */
-    public static int sBox(int pos, int concatValue, int bits, int sBoxNr) {
+    public static int sBox(byte pos, int concatValue, byte bits, byte sBoxNr) {
         return (SerpentTables.Sbox[sBoxNr][bits] << (pos - 3)) | concatValue;
     }
 
@@ -165,7 +221,7 @@ public class TestSBoxes {
      * @return Manipulierte Variable concatValue, in die an pos (MSB) der
      * invSBox Wert gesetzt wurde
      */
-    public static int invSBox(int pos, int concatValue, int bits, int invSBoxNr) {
+    public static int invSBox(byte pos, int concatValue, byte bits, byte invSBoxNr) {
         return (SerpentTables.SboxInverse[invSBoxNr][bits] << (pos - 3)) | concatValue;
     }
 
@@ -174,24 +230,24 @@ public class TestSBoxes {
         // int i = 0xFFFFFFFF;
         // int i = 0;
 
-        int a = 1 << 31;
-        int b = 1 << 30;
-        int c = 1 << 29;
-        int d = 1 << 28;
-        int konkat = a | b | c | d;
-        System.out.println("konkat: " + konkat);
-        // testschleife sbox
-        int temp = 0;
-        for (int i = 3; i <= 31; i += 4) {
-            temp = sBox(i, temp, get4Bits(i, konkat), 0);
-        }
-        System.out.println(temp);
-
-        int temp2 = 0;
-        for (int i = 3; i <= 31; i += 4) {
-            temp2 = invSBox(i, temp2, get4Bits(i, temp), 0);
-        }
-        System.out.println(temp2);
+        // int a = 1 << 31;
+        // int b = 1 << 30;
+        // int c = 1 << 29;
+        // int d = 1 << 28;
+        // int konkat = a | b | c | d;
+        // System.out.println("konkat: " + konkat);
+        // // testschleife sbox
+        // int temp = 0;
+        // for (int i = 3; i <= 31; i += 4) {
+        // temp = sBox(i, temp, get4Bits(i, konkat), 0);
+        // }
+        // System.out.println(temp);
+        //
+        // int temp2 = 0;
+        // for (int i = 3; i <= 31; i += 4) {
+        // temp2 = invSBox(i, temp2, get4Bits(i, temp), 0);
+        // }
+        // System.out.println(temp2);
 
         // int temp = sBox(31,concatValue,get4Bits(31, konkat),0);
 
@@ -210,11 +266,27 @@ public class TestSBoxes {
 
         // -1 000 00000 00000 00000 00000 00000
 
-        // int [] in = new int[4];
-        // in[0] = 1242340;
-        // in[1] = 2024234;
-        // in[2] = 3242340;
-        // in[3] = (1<<31)-1;
+        int[] in = new int[4];
+        int[] out = new int[4];
+        int[] out2 = new int[4];
+        in[0] = 0;
+        in[1] = 2000;
+        in[2] = 30;
+        in[3] = (1 << 31) - 1;
+        System.out.println(in[3]);
+
+        linTransform(in, out);
+
+        for (int i : out) {
+            System.out.print(i + " ");
+        }
+        System.out.println();
+
+        invLinTransform(out, out2);
+
+        for (int i : out2) {
+            System.out.print(i + " ");
+        }
         //
         // int [] out = initialPermutation(in);
         // for(int i:out) {
