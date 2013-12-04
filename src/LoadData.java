@@ -5,13 +5,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.LinkedList;
 
-public class loadData {
+public class LoadData {
 
-    public loadData(String source) {
+    public LoadData(String source) {
 
     }
 
-    public loadData(String source, String dest) {
+    public LoadData(String source, String dest) {
 
     }
 
