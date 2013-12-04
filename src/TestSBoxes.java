@@ -1,3 +1,6 @@
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 /*
  * Serpent Implementierung mit Table-LookUp
  * 
@@ -9,78 +12,51 @@
 public class TestSBoxes {
 
     /*
-     * Setzt/entfernt ein Bit an der gewuenschten Stelle einer Zahl
+     * Liest Array an bestimmter Position aus in Bezug auf maximale Laenge von
+     * 32 Bit pro int
      * 
-     * @param pos Position die manipuliert werden soll
+     * @param pos Position (0-127)
      * 
-     * @param value Wert der manipuliert werden soll
+     * @param array Array aus dem ausgelesen wird
      * 
-     * @param bit 1 oder 0, je nachdem welches Bit gesetzt werden soll
-     * 
-     * @return manipulierter Wert
+     * @return 1 oder 0
      */
-    public static int setBit(byte pos, int value, byte bit) {
-        int flag = 1 << pos;
-        return bit == 1 ? (value | flag) : (value & (~flag));
+    public static byte getArrayBit(byte pos, int[] array) {
+        return Utils.getBit((byte) (pos % 32), array[pos / 32]);
     }
 
     /*
-     * Setzt 4 Bits an eine gewuenschte Stelle einer Zahl
+     * Setzt Bit an bestimmter Position in Array in Bezug auf maximale Laenge
+     * von 32 Bit pro int
      * 
-     * @param pos Endposition der 4 Bits (Referenz ist MSB)
+     * @param pos Position (0-127)
      * 
-     * @param value Zahl welche mit 4 Bits manipuliert werden soll
+     * @param array Array aus dem ausgelesen wird
      * 
-     * @param bits Zahl 0-15 die in value eingefuegt wird
-     * 
-     * @return Manipulierte value Variable mit eingefuegten bits
+     * @param bit 1 oder 0
      */
-    public static int set4Bits(byte pos, int value, byte bits) {
-        int pattern = -1 & ~(1 << pos) & ~(1 << (pos - 1)) & ~(1 << (pos - 2)) & ~(1 << (pos - 3));
-        value &= pattern; // an die 4 Stellen werden 0en gesetzt
-        // 0en werden hier mit den 4 Bits ueberschrieben
-        value |= ((8 & bits) << pos - 3) | ((4 & bits) << (pos - 3)) | ((2 & bits) << (pos - 3)) | ((1 & bits) << (pos - 3));
-        return value;
+    public static void setArrayBit(byte pos, int[] array, byte bit) {
+        array[pos / 32] = Utils.setBit((byte) (pos % 32), array[pos / 32], bit);
     }
 
     /*
-     * Gibt 4 Bits zurueck, die beginnend einer Position (MSB) stehen
+     * Liest ein Bit aus einem Array der Groesse 4 und schreibt dieses Bit in
+     * ein neues Array
      * 
-     * @param pos MSB, aber der beginnend 4 Bits Richtung LSB zurueckgegeben
+     * @param posIn Position (0-127) des Bits, welches ausgelesen werden soll
+     * 
+     * @param posOut Position (0-127), an der das ausgelesene Bit geschrieben
      * werden soll
      * 
-     * @param value Wert, aus dem Bits ausgelesen werden sollen
+     * @param in Array aus dem ausgelesen werden soll
      * 
-     * @return Wert zwischen 0-15
+     * @param out Array in das das Bit geschrieben werden soll
+     * 
+     * @return Variable out mit dem geaendertem Bit an posOut
      */
-    public static byte get4Bits(byte pos, int value) {
-        int ones = 15 << pos - 3;
-        return (byte) ((value & ones) >>> pos - 3);
-    }
-
-    /*
-     * Gibt zurueck ob Bit an abgefragter Stelle gesetzt ist
-     * 
-     * @param pos Position, welche ausgelesen werden soll
-     * 
-     * @param value Wert, an dem eine Position ausgelesen werden soll
-     * 
-     * @return 1 oder 0, je nachdem welches Bit gesetzt ist
-     */
-    public static byte getBit(byte pos, int value) {
-        int offset = 1 << pos;
-        if ((value & offset) != 0)
-            return 1;
-        else
-            return 0;
-    }
-
-    public static byte getArrayBit(byte pos, int[] array) {
-        return getBit((byte) (pos % 32), array[pos / 32]);
-    }
-
-    public static void setArrayBit(byte pos, int[] array, byte bit) {
-        array[pos / 32] = setBit((byte) (pos % 32), array[pos / 32], bit);
+    public static void copyArrayBit(byte posIn, byte posOut, int[] in, int[] out) {
+        int posOutArr = posOut / 32;
+        out[posOutArr] = Utils.setBit((byte) (posOut % 32), out[posOutArr], Utils.getBit((byte) (posIn % 32), in[posIn / 32]));
     }
 
     /*
@@ -126,26 +102,6 @@ public class TestSBoxes {
             // Verknuepften Werte in Array sichern
             setArrayBit(posOut, out, tmp);
         }
-    }
-
-    /*
-     * Liest ein Bit aus einem Array der Groesse 4 und schreibt dieses Bit in
-     * ein neues Array
-     * 
-     * @param posIn Position (0-127) des Bits, welches ausgelesen werden soll
-     * 
-     * @param posOut Position (0-127), an der das ausgelesene Bit geschrieben
-     * werden soll
-     * 
-     * @param in Array aus dem ausgelesen werden soll
-     * 
-     * @param out Array in das das Bit geschrieben werden soll
-     * 
-     * @return Variable out mit dem geaendertem Bit an posOut
-     */
-    public static void copyArrayBit(byte posIn, byte posOut, int[] in, int[] out) {
-        int posOutArr = posOut / 32;
-        out[posOutArr] = setBit((byte) (posOut % 32), out[posOutArr], getBit((byte) (posIn % 32), in[posIn / 32]));
     }
 
     /*
@@ -224,27 +180,38 @@ public class TestSBoxes {
     }
 
     public static void main(String[] args) {
-        int[] in = new int[4];
-        int[] out = new int[4];
-        int[] out2 = new int[4];
-        in[0] = 0;
-        in[1] = 2000;
-        in[2] = 30;
-        in[3] = (1 << 31) - 1;
-        System.out.println(in[3]);
 
-        linTransform(in, out);
+        // int[] key = new int[2];
+        // key[1] = 200;
+        // key[0] = 2;
+        //
+        // padKey(key);
+        //
+        // System.out.println(key[1]);
+        // System.out.println(key[0]);
+        // System.out.println(get4Bits((byte) 31, key[0]));
 
-        for (int i : out) {
-            System.out.print(i + " ");
-        }
-        System.out.println();
-
-        invLinTransform(out, out2);
-
-        for (int i : out2) {
-            System.out.print(i + " ");
-        }
+        // int[] in = new int[4];
+        // int[] out = new int[4];
+        // int[] out2 = new int[4];
+        // in[0] = 0;
+        // in[1] = 2000;
+        // in[2] = 30;
+        // in[3] = (1 << 31) - 1;
+        // System.out.println(in[3]);
+        //
+        // linTransform(in, out);
+        //
+        // for (int i : out) {
+        // System.out.print(i + " ");
+        // }
+        // System.out.println();
+        //
+        // invLinTransform(out, out2);
+        //
+        // for (int i : out2) {
+        // System.out.print(i + " ");
+        // }
 
     }
 }
