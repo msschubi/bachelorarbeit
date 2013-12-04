@@ -116,26 +116,38 @@ public class Utils {
      * 
      * @param rawKey Array der Laenge 32
      * 
-     * @return Array der Laenge 8 mit jeweils ints gefuellt mit 32 Bit
+     * @return int-Array der Laenge 8 jeweils gefuellt mit 32 Bit
      */
     public static int[] getSerpentKey(byte[] rawKey) {
         int[] serpentKey = new int[8];
 
-        serpentKey[0] = (rawKey[0]) << 24;
-        serpentKey[0] |= ((byte) -52) << 16;
-        // serpentKey[0] |= (rawKey[2]) << 8;
-        // serpentKey[0] |= (rawKey[3]);
+        // jeweils 4 Bit aus einem Byte auslesen und in serpentKey schreiben
+        // pro Schleifendurchlauf werden aus rawKey 4 Eintraege ausgelesen
+        // und ein Eintrag in serpentKey belegt
+        for (int i = 0; i < 8; i++) {
+            serpentKey[i] = set4Bits((byte) 31, serpentKey[i], get4Bits((byte) 7, (int) rawKey[0 + i * 4]));
+            serpentKey[i] = set4Bits((byte) 27, serpentKey[i], get4Bits((byte) 3, (int) rawKey[0 + i * 4]));
 
+            serpentKey[i] = set4Bits((byte) 23, serpentKey[i], get4Bits((byte) 7, (int) rawKey[1 + i * 4]));
+            serpentKey[i] = set4Bits((byte) 19, serpentKey[i], get4Bits((byte) 3, (int) rawKey[1 + i * 4]));
+
+            serpentKey[i] = set4Bits((byte) 15, serpentKey[i], get4Bits((byte) 7, (int) rawKey[2 + i * 4]));
+            serpentKey[i] = set4Bits((byte) 11, serpentKey[i], get4Bits((byte) 3, (int) rawKey[2 + i * 4]));
+
+            serpentKey[i] = set4Bits((byte) 7, serpentKey[i], get4Bits((byte) 7, (int) rawKey[3 + i * 4]));
+            serpentKey[i] = set4Bits((byte) 3, serpentKey[i], get4Bits((byte) 3, (int) rawKey[3 + i * 4]));
+        }
         return serpentKey;
     }
 
     public static void main(String[] args) {
-        for (byte b : getKey("test")) {
-            System.out.println(b);
-        }
-        System.out.println();
+
+        // for (byte b : getKey("test")) {
+        // System.out.println(b);
+        // }
+        // System.out.println();
         int[] test = getSerpentKey(getKey("test"));
-        System.out.println(test[0]);
+        // System.out.println(test[0]);
 
     }
 }
