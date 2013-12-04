@@ -179,8 +179,65 @@ public class TestSBoxes {
         return (SerpentTables.SboxInverse[invSBoxNr][bits] << (pos - 3)) | concatValue;
     }
 
-    public static void main(String[] args) {
+    /*
+     * Macht aus dem durch getKey erzeugten 32*8Bit Schluessel einen 8*32Bit
+     * Schluessel
+     * 
+     * @param rawKey Array der Laenge 32
+     * 
+     * @return int-Array der Laenge 8 jeweils gefuellt mit 32 Bit
+     */
+    public static int[] getSerpentK(byte[] rawKey) {
+        int[] serpentKey = new int[8];
 
+        // jeweils 4 Bit aus einem Byte auslesen und in serpentKey schreiben
+        // pro Schleifendurchlauf werden aus rawKey 4 Eintraege ausgelesen
+        // und ein Eintrag in serpentKey belegt
+        for (int i = 0; i < 8; i++) {
+            serpentKey[i] = Utils.set4Bits((byte) 31, serpentKey[i], Utils.get4Bits((byte) 7, (int) rawKey[0 + i * 4]));
+            serpentKey[i] = Utils.set4Bits((byte) 27, serpentKey[i], Utils.get4Bits((byte) 3, (int) rawKey[0 + i * 4]));
+
+            serpentKey[i] = Utils.set4Bits((byte) 23, serpentKey[i], Utils.get4Bits((byte) 7, (int) rawKey[1 + i * 4]));
+            serpentKey[i] = Utils.set4Bits((byte) 19, serpentKey[i], Utils.get4Bits((byte) 3, (int) rawKey[1 + i * 4]));
+
+            serpentKey[i] = Utils.set4Bits((byte) 15, serpentKey[i], Utils.get4Bits((byte) 7, (int) rawKey[2 + i * 4]));
+            serpentKey[i] = Utils.set4Bits((byte) 11, serpentKey[i], Utils.get4Bits((byte) 3, (int) rawKey[2 + i * 4]));
+
+            serpentKey[i] = Utils.set4Bits((byte) 7, serpentKey[i], Utils.get4Bits((byte) 7, (int) rawKey[3 + i * 4]));
+            serpentKey[i] = Utils.set4Bits((byte) 3, serpentKey[i], Utils.get4Bits((byte) 3, (int) rawKey[3 + i * 4]));
+        }
+        return serpentKey;
+    }
+
+    /*
+     * Hilfsmethode getPreKeyValue liefert die Werte fuer die XOR PreKey
+     * Berechnung (da die Funktion rekursiv mit neg. Werten berechnet wird
+     */
+    public static int getPKV(int i, int[] negativeW, int[] w) {
+        return i < 0 ? negativeW[i+8] : w[i];
+    }
+
+    public static int[] getPreKey(int[] negativeW) {
+        int[] w = new int[132];
+        int phi = 0x9e3779b9;
+        
+        for(int i=0; i<132; i++) {
+            w[i] = (getPKV(i-8, negativeW, w) ^ getPKV(i-5, negativeW, w) ^ 
+                   getPKV(i-3, negativeW, w) ^ getPKV(i-1, negativeW, w) ^ 
+                   phi ^ i);
+            //Rotation um 11 (nach links)
+            w[i] = (w[i] << 11) | (w[i]>>>21);
+        }
+        return w;
+        
+    }
+
+    public static void main(String[] args) {
+        
+        for(int i:getPreKey(getSerpentK(Utils.getKey("test")))) {
+            System.out.println(i);
+        }
+        
         // int[] key = new int[2];
         // key[1] = 200;
         // key[0] = 2;
