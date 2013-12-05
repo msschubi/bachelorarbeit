@@ -1,4 +1,3 @@
-
 /*
  * Serpent Implementierung mit Table-LookUp
  * 
@@ -209,33 +208,84 @@ public class Serpent {
 
     /*
      * Hilfsmethode getPreKeyValue liefert die Werte fuer die XOR PreKey
-     * Berechnung (da die Funktion rekursiv mit neg. Werten berechnet wird
+     * Berechnung (da die Funktion rekursiv mit neg. Werten definiert wurde)
      */
     public static int getPKV(int i, int[] negativeW, int[] w) {
-        return i < 0 ? negativeW[i+8] : w[i];
+        return i < 0 ? negativeW[i + 8] : w[i];
     }
 
+    /*
+     * Die als PreKey bezeichneten Werte werden in dieser Methode berechnen
+     * 
+     * @param negativeW Die Anfangswerte fuer die rekursiv definierten PreKeys
+     * 
+     * @return 132 x 32 Bit Woerter im Array gespeichert
+     */
     public static int[] getPreKey(int[] negativeW) {
         int[] w = new int[132];
         int phi = 0x9e3779b9;
-        
-        for(int i=0; i<132; i++) {
-            w[i] = (getPKV(i-8, negativeW, w) ^ getPKV(i-5, negativeW, w) ^ 
-                   getPKV(i-3, negativeW, w) ^ getPKV(i-1, negativeW, w) ^ 
-                   phi ^ i);
-            //Rotation um 11 (nach links)
-            w[i] = (w[i] << 11) | (w[i]>>>21);
+
+        for (int i = 0; i < 132; i++) {
+            w[i] = (getPKV(i - 8, negativeW, w) ^ getPKV(i - 5, negativeW, w) ^ getPKV(i - 3, negativeW, w) ^ getPKV(i - 1, negativeW, w) ^ phi ^ i);
+            // Rotation um 11 (nach links)
+            w[i] = (w[i] << 11) | (w[i] >>> 21);
         }
         return w;
-        
+
+    }
+
+    /*
+     * Hilfsmethode, die die benoetigte sBox fuer einen bestimmten Key berechnet
+     * 
+     * @param value Wert zwischen 0 und 32 (33 Keys gibt es)
+     */
+    public static byte calcKeySBox(int value) {
+        return (byte) ((35 - value) % 8);
+    }
+
+    /*
+     * Aus dem PreKey werden die Rundenschluessel berechnet
+     * 
+     * @param preKey PreKey zur Berechnung der Rundenschluessel (132 x 32 Bit)
+     * als Array
+     * 
+     * @return 33 x 128 Bit SubKeys als doppeltes Array
+     */
+    public static int[][] getRoundKey(int[] preKey) {
+        int[][] subKeys = new int[33][4];
+        int concatValue = 0;
+        byte bits;
+
+        // ein RoundKey besteht aus 4 x 32 Bit PreKeys auf denen die sBoxen
+        // angewendet wurde
+
+        // alle k_i werden durchlaufen
+        for (int k_i = 0; k_i < 132; k_i++) {
+            concatValue = 0;
+            bits = 0;
+
+            // Schleife fuer ein k_i
+            for (byte pos = 31; pos >= 3; pos -= 4) {
+                bits = Utils.get4Bits(pos, preKey[k_i]);
+                // sBox wird pro int-Wert 8x angewendet, also pro Key 32x
+                concatValue = sBox(pos, concatValue, bits, calcKeySBox(k_i / 4));
+            }
+            subKeys[k_i / 4][k_i % 4] = concatValue;
+        }
+        return subKeys;
     }
 
     public static void main(String[] args) {
-        
-        for(int i:getPreKey(getSerpentK(Utils.getKey("test")))) {
-            System.out.println(i);
+        int counter = 0;
+        for (int i[] : getRoundKey(getPreKey(getSerpentK(Utils.getKey("test1"))))) {
+            System.out.println("--------------------------");
+            System.out.println("key " + counter / 4 + ":");
+            for (int a : i) {
+                counter++;
+                System.out.print(counter + "\t");
+                System.out.println(a);
+            }
         }
-        
         // int[] key = new int[2];
         // key[1] = 200;
         // key[0] = 2;
