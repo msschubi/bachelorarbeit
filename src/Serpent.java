@@ -1,4 +1,4 @@
-/*
+/**
  * Serpent Implementierung mit Table-LookUp
  * 
  * @author Marcel Schubert
@@ -8,7 +8,7 @@
 
 public class Serpent {
 
-    /*
+    /**
      * Liest Array an bestimmter Position aus in Bezug auf maximale Laenge von
      * 32 Bit pro int
      * 
@@ -18,11 +18,11 @@ public class Serpent {
      * 
      * @return 1 oder 0
      */
-    public static byte getArrayBit(byte pos, int[] array) {
-        return Utils.getBit((byte) (pos % 32), array[pos / 32]);
+    public static int getArrayBit(int pos, int[] array) {
+        return Utils.getBit((pos % 32), array[pos / 32]);
     }
 
-    /*
+    /**
      * Setzt Bit an bestimmter Position in Array in Bezug auf maximale Laenge
      * von 32 Bit pro int
      * 
@@ -36,7 +36,7 @@ public class Serpent {
         array[pos / 32] = Utils.setBit((byte) (pos % 32), array[pos / 32], bit);
     }
 
-    /*
+    /**
      * Liest ein Bit aus einem Array der Groesse 4 und schreibt dieses Bit in
      * ein neues Array
      * 
@@ -56,7 +56,7 @@ public class Serpent {
         out[posOutArr] = Utils.setBit((byte) (posOut % 32), out[posOutArr], Utils.getBit((byte) (posIn % 32), in[posIn / 32]));
     }
 
-    /*
+    /**
      * Anwendung der linearen Transformation (bzw. IP(LT(FP(x))) ) auf einen
      * Array
      * 
@@ -78,7 +78,7 @@ public class Serpent {
         }
     }
 
-    /*
+    /**
      * Anwendung der inversen linearen Transformation (bzw. IP(invLT(FP(x))) )
      * auf einen Array
      * 
@@ -101,7 +101,7 @@ public class Serpent {
         }
     }
 
-    /*
+    /**
      * Wendet die initiale Permutation auf ein int-Array der Groeße 4 an
      * 
      * @param in Array der Größe 4
@@ -117,7 +117,7 @@ public class Serpent {
         return out;
     }
 
-    /*
+    /**
      * Wendet die finale Permutation auf ein int-Array der Groeße 4 an
      * 
      * @param in Array der Größe 4
@@ -133,7 +133,7 @@ public class Serpent {
         return out;
     }
 
-    /*
+    /**
      * Wendet die sBox auf bestimme 4 Bits eines Wertes an und ersetzt leere
      * Bits einer anderen Variable mit diesen 4 Bits
      * 
@@ -150,11 +150,11 @@ public class Serpent {
      * @return Manipulierte Variable concatValue, in die an pos (MSB) der sBox
      * Wert gesetzt wurde
      */
-    public static int sBox(byte pos, int concatValue, byte bits, byte sBoxNr) {
+    public static int sBox(int pos, int concatValue, int bits, int sBoxNr) {
         return (SerpentTables.Sbox[sBoxNr][bits] << (pos - 3)) | concatValue;
     }
 
-    /*
+    /**
      * Wendet die invSBox auf bestimme 4 Bits eines Wertes an und ersetzt leere
      * Bits einer anderen Variable mit diesen 4 Bits
      * 
@@ -172,11 +172,11 @@ public class Serpent {
      * @return Manipulierte Variable concatValue, in die an pos (MSB) der
      * invSBox Wert gesetzt wurde
      */
-    public static int invSBox(byte pos, int concatValue, byte bits, byte invSBoxNr) {
+    public static int invSBox(int pos, int concatValue, int bits, int invSBoxNr) {
         return (SerpentTables.SboxInverse[invSBoxNr][bits] << (pos - 3)) | concatValue;
     }
 
-    /*
+    /**
      * Macht aus dem durch getKey erzeugten 32*8Bit Schluessel einen 8*32Bit
      * Schluessel
      * 
@@ -206,7 +206,7 @@ public class Serpent {
         return serpentKey;
     }
 
-    /*
+    /**
      * Hilfsmethode getPreKeyValue liefert die Werte fuer die XOR PreKey
      * Berechnung (da die Funktion rekursiv mit neg. Werten definiert wurde)
      */
@@ -214,7 +214,7 @@ public class Serpent {
         return i < 0 ? negativeW[i + 8] : w[i];
     }
 
-    /*
+    /**
      * Die als PreKey bezeichneten Werte werden in dieser Methode berechnen
      * 
      * @param negativeW Die Anfangswerte fuer die rekursiv definierten PreKeys
@@ -234,7 +234,7 @@ public class Serpent {
 
     }
 
-    /*
+    /**
      * Hilfsmethode, die die benoetigte sBox fuer einen bestimmten Key berechnet
      * 
      * @param value Wert zwischen 0 und 32 (33 Keys gibt es)
@@ -243,7 +243,7 @@ public class Serpent {
         return (byte) ((35 - value) % 8);
     }
 
-    /*
+    /**
      * Aus dem PreKey werden die Rundenschluessel berechnet
      * 
      * @param preKey PreKey zur Berechnung der Rundenschluessel (132 x 32 Bit)
@@ -254,7 +254,7 @@ public class Serpent {
     public static int[][] getRoundKey(int[] preKey) {
         int[][] subKeys = new int[33][4];
         int concatValue = 0;
-        byte bits;
+        int bits;
 
         // ein RoundKey besteht aus 4 x 32 Bit PreKeys auf denen die sBoxen
         // angewendet wurde
@@ -265,7 +265,7 @@ public class Serpent {
             bits = 0;
 
             // Schleife fuer ein k_i
-            for (byte pos = 31; pos >= 3; pos -= 4) {
+            for (int pos = 31; pos >= 3; pos -= 4) {
                 bits = Utils.get4Bits(pos, preKey[k_i]);
                 // sBox wird pro int-Wert 8x angewendet, also pro Key 32x
                 concatValue = sBox(pos, concatValue, bits, calcKeySBox(k_i / 4));
@@ -275,7 +275,7 @@ public class Serpent {
         return subKeys;
     }
 
-    /*
+    /**
      * Hilfsmethode zur anzeige der berechneten Keys
      * 
      * @param key String der in Serpentschluessel angezeigt werden soll
@@ -293,7 +293,7 @@ public class Serpent {
         }
     }
 
-    /*
+    /**
      * Verschluesselt ein 132Bit Wort (4 x 32Bit Array)
      * 
      * @param p Plaintext, welcher verschluesselt wird
@@ -302,19 +302,24 @@ public class Serpent {
      */
     public static int[] encrypt(int[] p, int[][] k) {
         int concatValue;
-        byte bits;
+        int bits;
         // initial Permutation auf Plaintext p anwenden
         int b_i[] = initialPermutation(p);
 
         // 31 Runden mit linearer Transformation
         for (int round = 0; round < 31; round++) {
-
+            System.out.println();
+            System.out.println("Round:" + round);
             // nicht bitslice version benötigt IP
             k[round] = initialPermutation(k[round]);
 
+            // debug
+            for (int key : k[round]) {
+                System.out.print(key + "\t");
+            }
+
             // XOR verknüpfung von B und K
             b_i[0] = b_i[0] ^ k[round][0];
-            System.out.println("Schluessel: " + (round));
             b_i[1] = b_i[1] ^ k[round][1];
             b_i[2] = b_i[2] ^ k[round][2];
             b_i[3] = b_i[3] ^ k[round][3];
@@ -324,7 +329,7 @@ public class Serpent {
                 // Anwendung der Sbox auf einen Arrayeintrag eines Keys
                 concatValue = 0;
                 bits = 0;
-                for (byte pos = 31; pos >= 3; pos -= 4) {
+                for (int pos = 31; pos >= 3; pos -= 4) {
                     bits = Utils.get4Bits(pos, b_i[keyNr]);
                     concatValue = sBox(pos, concatValue, bits, (byte) (round % 8));
                 }
@@ -353,7 +358,7 @@ public class Serpent {
             // Anwendung der Sbox auf einen Arrayeintrag eines Keys
             concatValue = 0;
             bits = 0;
-            for (byte pos = 31; pos >= 3; pos -= 4) {
+            for (int pos = 31; pos >= 3; pos -= 4) {
                 bits = Utils.get4Bits(pos, b_i[keyNr]);
                 concatValue = sBox(pos, concatValue, bits, (byte) (7));
             }
@@ -361,7 +366,7 @@ public class Serpent {
         }
 
         // nicht bitslice version benötigt IP
-        k[31] = initialPermutation(k[32]);
+        k[32] = initialPermutation(k[32]);
 
         // XOR verknüpfung nach sBox
         b_i[0] = b_i[0] ^ k[32][0];
@@ -378,19 +383,136 @@ public class Serpent {
         return b_i;
     }
 
+    /**
+     * Entschluesselt ein 132Bit Wort (4 x 32Bit Array)
+     * 
+     * @param c Ciphertext, welcher entschluesselt wird
+     * 
+     * @return Plaintext (4 x 32Bit Array)
+     */
+    public static int[] decrypt(int[] c, int[][] k) {
+        int concatValue;
+        int bits;
+
+        // initial Permutation auf Plaintext p anwenden
+        int b_i[] = finalPermutation(c);
+
+        // ******** Runde 31 anfang (32te Runde) ***********
+
+        // nicht bitslice version benötigt IP
+        k[32] = initialPermutation(k[32]);
+
+        // XOR verknüpfung von B und K
+        b_i[0] = b_i[0] ^ k[32][0];
+        b_i[1] = b_i[1] ^ k[32][1];
+        b_i[2] = b_i[2] ^ k[32][2];
+        b_i[3] = b_i[3] ^ k[32][3];
+        System.out.println("Schluessel: " + (32));
+
+        for (int keyNr = 0; keyNr < 4; keyNr++) {
+            // Anwendung der Sbox auf einen Arrayeintrag eines Keys
+            concatValue = 0;
+            bits = 0;
+            for (int pos = 31; pos >= 3; pos -= 4) {
+                bits = Utils.get4Bits(pos, b_i[keyNr]);
+                concatValue = invSBox(pos, concatValue, bits, 0);
+            }
+            b_i[keyNr] = concatValue;
+        }
+
+        // nicht bitslice version benötigt IP
+        k[31] = initialPermutation(k[31]);
+
+        // XOR verknüpfung nach sBox
+        b_i[0] = b_i[0] ^ k[31][0];
+        b_i[1] = b_i[1] ^ k[31][1];
+        b_i[2] = b_i[2] ^ k[31][2];
+        b_i[3] = b_i[3] ^ k[31][3];
+        System.out.println("Schluessel: " + (31));
+
+        // ******** Runde 32 ende *************
+
+        // 31 Runden mit linearer Transformation
+        for (int round = 30; round >= 0; round--) {
+
+            // nicht bitslice version benötigt IP
+            k[round] = initialPermutation(k[round]);
+
+            // XOR verknüpfung von B und K
+            b_i[0] = b_i[0] ^ k[round][0];
+            System.out.println("Schluessel: " + (round) + ", sBoxNr: " + ((39 + round) % 8));
+            b_i[1] = b_i[1] ^ k[round][1];
+            b_i[2] = b_i[2] ^ k[round][2];
+            b_i[3] = b_i[3] ^ k[round][3];
+
+            // SBox (muss 8x pro Arrayeintrag; also 4x8 angewendet werden)
+            for (int keyNr = 0; keyNr < 4; keyNr++) {
+                // Anwendung der Sbox auf einen Arrayeintrag eines Keys
+                concatValue = 0;
+                bits = 0;
+                for (int pos = 31; pos >= 3; pos -= 4) {
+                    bits = Utils.get4Bits(pos, b_i[keyNr]);
+                    // inverse sBox in umgekehrter reihenfolge
+                    concatValue = invSBox(pos, concatValue, bits, (byte) ((39 + round) % 8));
+                }
+                b_i[keyNr] = concatValue;
+            }
+
+            // lineare Transformation
+            int[] out = new int[4];
+            invLinTransform(b_i, out);
+            b_i = out;
+        }// ende 31 runden
+
+        // Finale Permutation
+        initialPermutation(b_i);
+
+        return b_i;
+    }
+
     public static void main(String[] args) {
 
         // showKeys("test");
-
-        int[] value = { 1, 2, 3, 4 };
-        int[][] key = getRoundKey(getPreKey(getSerpentK(Utils.getKey("test"))));
-
-        int[] cipher = encrypt(value, key);
-
+        Utils.printLittleEndian();
+        int t = 0;
+        t = Utils.set4Bits(28, t, 10);
+        Utils.printBinary(t);
         System.out.println();
-        for (int i : cipher) {
-            System.out.println(i);
-        }
+        System.out.println(Utils.get4Bits(28, t));
+
+        // t = Utils.setBit(0, t, 1);
+        // System.out.println(t);
+        // System.out.println(Utils.setBit(0, t, 1));
+        // Utils.printLittleEndian();
+        // Utils.printBinary(t);
+        // int[] value = { 0, Utils.setBit(0, 0, 1), 0, 0 };
+        // int[] out = new int[4];
+        // int[] invOut = new int[4];
+        // int concatValue = 0;
+        // int value = 23482;
+        // int[] ip = initialPermutation(value);
+        // int[] fp = finalPermutation(ip);
+        //
+        // Utils.printLittleEndian();
+        // Utils.printBinary(value);
+        // System.out.println();
+        // Utils.printBinary(ip);
+        // System.out.println();
+        // Utils.printBinary(fp);
+        // Utils.printBinary(concatValue);
+
+        // int[][] key =
+        // getRoundKey(getPreKey(getSerpentK(Utils.getKey("test"))));
+        //
+        // for (int[] k : key) {
+        // for (int l : k) {
+        // System.out.print(l+"\t");
+        // }
+        // System.out.println();
+        // }
+        //
+        //
+        // encrypt(value, key);
 
         // int[] key = new int[2];
         // key[1] = 200;
