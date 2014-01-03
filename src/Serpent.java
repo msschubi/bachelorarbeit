@@ -36,6 +36,7 @@ public class Serpent {
         array[pos / 32] = Utils.setBit((byte) (pos % 32), array[pos / 32], bit);
     }
 
+    //TODO testen
     /**
      * Liest ein Bit aus einem Array der Groesse 4 und schreibt dieses Bit in
      * ein neues Array
@@ -133,6 +134,7 @@ public class Serpent {
         return out;
     }
 
+    //TODO testen
     /**
      * Wendet die sBox auf bestimme 4 Bits eines Wertes an und ersetzt leere
      * Bits einer anderen Variable mit diesen 4 Bits
@@ -154,6 +156,7 @@ public class Serpent {
         return (SerpentTables.Sbox[sBoxNr][bits] << (pos - 3)) | concatValue;
     }
 
+    //TODO testen
     /**
      * Wendet die invSBox auf bestimme 4 Bits eines Wertes an und ersetzt leere
      * Bits einer anderen Variable mit diesen 4 Bits
@@ -176,6 +179,7 @@ public class Serpent {
         return (SerpentTables.SboxInverse[invSBoxNr][bits] << (pos - 3)) | concatValue;
     }
 
+    //TODO testen
     /**
      * Macht aus dem durch getKey erzeugten 32*8Bit Schluessel einen 8*32Bit
      * Schluessel
@@ -206,6 +210,7 @@ public class Serpent {
         return serpentKey;
     }
 
+    //TODO testen
     /**
      * Hilfsmethode getPreKeyValue liefert die Werte fuer die XOR PreKey
      * Berechnung (da die Funktion rekursiv mit neg. Werten definiert wurde)
@@ -214,6 +219,7 @@ public class Serpent {
         return i < 0 ? negativeW[i + 8] : w[i];
     }
 
+    //TODO testen
     /**
      * Die als PreKey bezeichneten Werte werden in dieser Methode berechnen
      * 
@@ -234,6 +240,7 @@ public class Serpent {
 
     }
 
+    //TODO testen
     /**
      * Hilfsmethode, die die benoetigte sBox fuer einen bestimmten Key berechnet
      * 
@@ -243,6 +250,7 @@ public class Serpent {
         return (byte) ((35 - value) % 8);
     }
 
+    //TODO testen
     /**
      * Aus dem PreKey werden die Rundenschluessel berechnet
      * 
@@ -275,6 +283,7 @@ public class Serpent {
         return subKeys;
     }
 
+    //TODO testen
     /**
      * Hilfsmethode zur anzeige der berechneten Keys
      * 
@@ -293,6 +302,7 @@ public class Serpent {
         }
     }
 
+    //TODO testen
     /**
      * Verschluesselt ein 132Bit Wort (4 x 32Bit Array)
      * 
@@ -383,6 +393,7 @@ public class Serpent {
         return b_i;
     }
 
+    //TODO testen
     /**
      * Entschluesselt ein 132Bit Wort (4 x 32Bit Array)
      * 
@@ -474,32 +485,77 @@ public class Serpent {
 
         // showKeys("test");
         Utils.printLittleEndian();
-        int t = 0;
-        t = Utils.set4Bits(28, t, 10);
-        Utils.printBinary(t);
-        System.out.println();
-        System.out.println(Utils.get4Bits(28, t));
 
-        // t = Utils.setBit(0, t, 1);
-        // System.out.println(t);
-        // System.out.println(Utils.setBit(0, t, 1));
-        // Utils.printLittleEndian();
-        // Utils.printBinary(t);
-        // int[] value = { 0, Utils.setBit(0, 0, 1), 0, 0 };
-        // int[] out = new int[4];
-        // int[] invOut = new int[4];
-        // int concatValue = 0;
-        // int value = 23482;
-        // int[] ip = initialPermutation(value);
-        // int[] fp = finalPermutation(ip);
+        
+        int t0 = Utils.setBit(0, 0, 1);
+        t0 = Utils.setBit(1, t0, 1);
+        int t1 = Utils.setBit(0, 0, 0);
+        int t2 = Utils.setBit(0, 0, 0);
+        int t3 = Utils.setBit(127, 0, 1);
+
+//        int[] value = { t0, t1, t2, t3 };
+        int[] value = { 0, 0, 0, 0 };
+        setArrayBit((byte)2, value, (byte)1);
+        setArrayBit((byte)14, value, (byte)1);
+        setArrayBit((byte)15, value, (byte)1);
+        setArrayBit((byte)55, value, (byte)1);
+        
+        Utils.printBinary(value);
+        
+        int[] out = new int[4];
+        int[] decode = new int[4];
+        linTransform(value, out);
+        
+        invLinTransform(out, decode);
+        
+        System.out.println();
+        Utils.printBinary(out);
+        System.out.println();
+        Utils.printBinary(decode);
+        
+        System.out.println("\n");
+        for(int i:value) {
+            System.out.print(i+" ");
+        }
+        System.out.println();
+        for(int i:decode) {
+            System.out.print(i+" ");
+        }
+//        setArrayBit((byte)3, value, (byte)0);
+//        System.out.println();
+//        Utils.printBinary(value);
+//        
+//        System.out.println();
+        
+        
+        
+//        int[] value = { 10, 23, 323, 312 };
+
+        // Utils.printBinary(value);
+
+//        int[] out = new int[4];
+//        int[] invOut = new int[4];
+//        int concatValue = 0;
+        // // int value = 23482;
+//        int[] ip = initialPermutation(value);
+
+//        int[] fp = finalPermutation(ip);
         //
         // Utils.printLittleEndian();
-        // Utils.printBinary(value);
-        // System.out.println();
-        // Utils.printBinary(ip);
-        // System.out.println();
-        // Utils.printBinary(fp);
-        // Utils.printBinary(concatValue);
+//        Utils.printBinary(value);
+//        System.out.println();
+//        Utils.printBinary(ip);
+//        System.out.println();
+//        Utils.printBinary(fp);
+//
+//        System.out.println();
+//        for (int i : value) {
+//            System.out.print(i + " ");
+//        }
+//        System.out.println();
+//        for (int i : fp) {
+//            System.out.print(i + " ");
+//        }
 
         // int[][] key =
         // getRoundKey(getPreKey(getSerpentK(Utils.getKey("test"))));

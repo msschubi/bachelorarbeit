@@ -107,6 +107,7 @@ public class Utils {
         return ((value & ones) >>> (31 - pos - 3));
     }
 
+    //TODO testen
     /**
      * Keystring wird zu 256 Bit gehasht
      * 
