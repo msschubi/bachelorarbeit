@@ -315,60 +315,70 @@ public class Serpent {
         int[] out = new int[4]; // Fuer linTrans
         int[][] b = new int[33][4]; // 33 Bs gibt es (letzte Runde 2)
 
-        int[] b_0 = initialPermutation(p);
+        b[0] = initialPermutation(p);
 
-        // ******************RUNDE 0**************
+        // Round 0 - Round 30
+        // B0 bis B31
+        for (int r = 0; r <= 30; r++) {
+            cv = new int[4];
+            b[r][0] ^= k[r][0];
+            b[r][1] ^= k[r][1];
+            b[r][2] ^= k[r][2];
+            b[r][3] ^= k[r][3];
 
-        for (int m = 0; m <= 30; m++) {
-
-            b[m][0] ^= k[0][0];
-            b[m][1] ^= k[0][1];
-            b[m][2] ^= k[0][2];
-            b[m][3] ^= k[0][3];
+            // System.out.println();
+            // System.out.println(b[r][0] + " " + b[r][1] + " " + b[r][2] + " "
+            // + b[r][3]);
 
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 32; j += 4) {
-                    cv[i] = sBox(j, cv[i], Utils.get4Bits(j, b[m][i]), 0);
+                    cv[i] = sBox(j, cv[i], Utils.get4Bits(j, b[r][i]), r);
                 }
             }
 
-            b[m][0] = cv[0];
-            b[m][1] = cv[1];
-            b[m][2] = cv[2];
-            b[m][3] = cv[3];
-
             out = new int[4];
-            cv = new int[4];
-            linTransform(b[m], out);
-            b[m + 1] = out;
+            linTransform(cv, out);
+            b[r + 1] = out;
+
         }
 
-        Utils.printBinary(b[31]);
+        // b[31][0] ^= k[31][0];
+        // b[31][1] ^= k[31][1];
+        // b[31][2] ^= k[31][2];
+        // b[31][3] ^= k[31][3];
+        //
+        // for (int i = 0; i < 4; i++) {
+        // for (int j = 0; j < 32; j += 4) {
+        // cv[i] = sBox(j, cv[i], Utils.get4Bits(j, b[31][i]), 0);
+        // }
+        // }
 
-        // *****************Test Rueckgaengig machen*****
-        for (int m = 0; m <= 30; m++) {
-
-            b[m][0] ^= k[0][0];
-            b[m][1] ^= k[0][1];
-            b[m][2] ^= k[0][2];
-            b[m][3] ^= k[0][3];
+        // B31 bis B0
+        for (int r = 31; r >= 1; r--) {
+            out = new int[4];
+            cv = new int[4];
+            invLinTransform(b[r], out);
 
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 32; j += 4) {
-                    cv[i] = sBox(j, cv[i], Utils.get4Bits(j, b[m][i]), 0);
+                    cv[i] = invSBox(j, cv[i], Utils.get4Bits(j, out[i]), r-1);
                 }
             }
 
-            b[m][0] = cv[0];
-            b[m][1] = cv[1];
-            b[m][2] = cv[2];
-            b[m][3] = cv[3];
+            b[r - 1][0] = k[r - 1][0] ^ cv[0];
+            b[r - 1][1] = k[r - 1][1] ^ cv[1];
+            b[r - 1][2] = k[r - 1][2] ^ cv[2];
+            b[r - 1][3] = k[r - 1][3] ^ cv[3];
 
-            out = new int[4];
-            cv = new int[4];
-            linTransform(b[m], out);
-            b[m + 1] = out;
         }
+        b[0] = finalPermutation(b[0]);
+
+        // Utils.printBinary(b[0]);
+
+        // Utils.printBinary(b[1]);
+        // System.out.println();
+        System.out.println();
+        System.out.println(b[0][0] + " " + b[0][1] + " " + b[0][2] + " " + b[0][3]);
 
         return null;
     }
