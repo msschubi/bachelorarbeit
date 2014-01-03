@@ -1,5 +1,3 @@
-import java.math.BigInteger;
-
 /**
  * Serpent Implementierung mit Table-LookUp
  * 
@@ -307,6 +305,8 @@ public class Serpent {
      * 
      * @param p Plaintext, welcher verschluesselt wird
      * 
+     * @param k 33 Rundenschluessel (33x4 array)
+     * 
      * @return Chiffretext (4 x 32Bit Array)
      */
     public static int[] encrypt(int[] p, int[][] k) {
@@ -362,6 +362,8 @@ public class Serpent {
      * Entschluesselt ein 132Bit Wort (4 x 32Bit Array)
      * 
      * @param c Ciphertext, welcher entschluesselt wird
+     * 
+     * @param k 33 Rundenschluessel (33x4 array)
      * 
      * @return Plaintext (4 x 32Bit Array)
      */
@@ -423,6 +425,15 @@ public class Serpent {
         int[] dec = new int[4];
         dec = decrypt(enc, key);
         System.out.println(dec[0] + " " + dec[1] + " " + dec[2] + " " + dec[3]);
+
+        System.out.println();
+        long t1 = System.currentTimeMillis();
+        for (int i = 0; i < 64000; i++) {
+//            decrypt(encrypt(value, key), key);
+            encrypt(value, key);
+        }
+        long t2 = System.currentTimeMillis();
+        System.out.println((t2 - t1) / 1000);
 
     }
 }
