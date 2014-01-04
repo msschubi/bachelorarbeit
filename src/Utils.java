@@ -115,7 +115,7 @@ public class Utils {
      * 
      * @return 32 * 8Bit Woerter in Bytearray der Laenge 32
      */
-    public static byte[] getKey(String key) {
+    public static int[] getKey(String key) {
 
         assert key.length() > 1 : "Key muss länger als 1 sein";
 
@@ -129,7 +129,7 @@ public class Utils {
         part2 += key.length();
 
         byte[] hash1, hash2;
-        byte[] hash = new byte[32];
+        int[] hash = new int[32];
 
         try {
 

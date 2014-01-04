@@ -32,8 +32,8 @@ public class Serpent {
      * 
      * @param bit 1 oder 0
      */
-    public static void setArrayBit(byte pos, int[] array, byte bit) {
-        array[pos / 32] = Utils.setBit((byte) (pos % 32), array[pos / 32], bit);
+    public static void setArrayBit(int pos, int[] array, int bit) {
+        array[pos / 32] = Utils.setBit((pos % 32), array[pos / 32], bit);
     }
 
     /**
@@ -53,7 +53,7 @@ public class Serpent {
      */
     public static void copyArrayBit(int posIn, int posOut, int[] in, int[] out) {
         int posOutArr = posOut / 32;
-        out[posOutArr] = Utils.setBit((byte) (posOut % 32), out[posOutArr], Utils.getBit((byte) (posIn % 32), in[posIn / 32]));
+        out[posOutArr] = Utils.setBit((posOut % 32), out[posOutArr], Utils.getBit((posIn % 32), in[posIn / 32]));
     }
 
     /**
@@ -66,11 +66,11 @@ public class Serpent {
      * @param out Array der Groesse 4 in welchem die lin.Trans. gespeichert wird
      */
     public static void linTransform(int[] in, int[] out) {
-        byte tmp;
-        for (byte posOut = 0; posOut <= 127 && posOut >= 0; posOut++) {
+        int tmp;
+        for (int posOut = 0; posOut <= 127; posOut++) {
             tmp = 0;
             // XOR verknuepfung der verschiedenen Werte
-            for (byte posIn : SerpentTables.LTtable[posOut]) {
+            for (int posIn : SerpentTables.LTtable[posOut]) {
                 tmp ^= getArrayBit(posIn, in);
             }
             // Verknuepften Werte in Array sichern
@@ -89,11 +89,11 @@ public class Serpent {
      * wird
      */
     public static void invLinTransform(int[] in, int[] out) {
-        byte tmp;
-        for (byte posOut = 0; posOut <= 127 && posOut >= 0; posOut++) {
+        int tmp;
+        for (int posOut = 0; posOut <= 127; posOut++) {
             tmp = 0;
             // XOR verknuepfung der verschiedenen Werte
-            for (byte posIn : SerpentTables.LTtableInverse[posOut]) {
+            for (int posIn : SerpentTables.LTtableInverse[posOut]) {
                 tmp ^= getArrayBit(posIn, in);
             }
             // Verknuepften Werte in Array sichern
@@ -185,24 +185,24 @@ public class Serpent {
      * 
      * @return int-Array der Laenge 8 jeweils gefuellt mit 32 Bit
      */
-    public static int[] getSerpentK(byte[] rawKey) {
+    public static int[] getSerpentK(int[] rawKey) {
         int[] serpentKey = new int[8];
 
         // jeweils 4 Bit aus einem Byte auslesen und in serpentKey schreiben
         // pro Schleifendurchlauf werden aus rawKey 4 Eintraege ausgelesen
         // und ein Eintrag in serpentKey belegt
         for (int i = 0; i < 8; i++) {
-            serpentKey[i] = Utils.set4Bits((byte) 31, serpentKey[i], Utils.get4Bits((byte) 7, (int) rawKey[0 + i * 4]));
-            serpentKey[i] = Utils.set4Bits((byte) 27, serpentKey[i], Utils.get4Bits((byte) 3, (int) rawKey[0 + i * 4]));
+            serpentKey[i] = Utils.set4Bits(31, serpentKey[i], Utils.get4Bits(7, rawKey[0 + i * 4]));
+            serpentKey[i] = Utils.set4Bits(27, serpentKey[i], Utils.get4Bits(3, rawKey[0 + i * 4]));
 
-            serpentKey[i] = Utils.set4Bits((byte) 23, serpentKey[i], Utils.get4Bits((byte) 7, (int) rawKey[1 + i * 4]));
-            serpentKey[i] = Utils.set4Bits((byte) 19, serpentKey[i], Utils.get4Bits((byte) 3, (int) rawKey[1 + i * 4]));
+            serpentKey[i] = Utils.set4Bits(23, serpentKey[i], Utils.get4Bits(7, rawKey[1 + i * 4]));
+            serpentKey[i] = Utils.set4Bits(19, serpentKey[i], Utils.get4Bits(3, rawKey[1 + i * 4]));
 
-            serpentKey[i] = Utils.set4Bits((byte) 15, serpentKey[i], Utils.get4Bits((byte) 7, (int) rawKey[2 + i * 4]));
-            serpentKey[i] = Utils.set4Bits((byte) 11, serpentKey[i], Utils.get4Bits((byte) 3, (int) rawKey[2 + i * 4]));
+            serpentKey[i] = Utils.set4Bits(15, serpentKey[i], Utils.get4Bits(7, rawKey[2 + i * 4]));
+            serpentKey[i] = Utils.set4Bits(11, serpentKey[i], Utils.get4Bits(3, rawKey[2 + i * 4]));
 
-            serpentKey[i] = Utils.set4Bits((byte) 7, serpentKey[i], Utils.get4Bits((byte) 7, (int) rawKey[3 + i * 4]));
-            serpentKey[i] = Utils.set4Bits((byte) 3, serpentKey[i], Utils.get4Bits((byte) 3, (int) rawKey[3 + i * 4]));
+            serpentKey[i] = Utils.set4Bits(7, serpentKey[i], Utils.get4Bits(7, rawKey[3 + i * 4]));
+            serpentKey[i] = Utils.set4Bits(3, serpentKey[i], Utils.get4Bits(3, rawKey[3 + i * 4]));
         }
         return serpentKey;
     }
@@ -320,7 +320,13 @@ public class Serpent {
         // Round 0 - Round 30
         // B0 bis B31
         for (int r = 0; r <= 30; r++) {
-            cv = new int[4];
+
+            // Auf 0 setzen, damit sBox richtig arbeitet
+            cv[0] = 0;
+            cv[1] = 0;
+            cv[2] = 0;
+            cv[3] = 0;
+
             b[r][0] ^= k[r][0];
             b[r][1] ^= k[r][1];
             b[r][2] ^= k[r][2];
@@ -332,13 +338,23 @@ public class Serpent {
                 }
             }
 
-            out = new int[4];
+            // damit linTransform richtig arbeitet
+            out[0] = 0;
+            out[1] = 0;
+            out[2] = 0;
+            out[3] = 0;
+
             linTransform(cv, out);
             b[r + 1] = out;
 
         }
 
-        cv = new int[4];
+        // s.o.
+        cv[0] = 0;
+        cv[1] = 0;
+        cv[2] = 0;
+        cv[3] = 0;
+
         b[31][0] ^= k[31][0];
         b[31][1] ^= k[31][1];
         b[31][2] ^= k[31][2];
@@ -374,7 +390,12 @@ public class Serpent {
 
         b[32] = initialPermutation(c);
 
-        cv = new int[4];
+        // Auf 0 setzen, damit sBox richtig arbeitet
+        cv[0] = 0;
+        cv[1] = 0;
+        cv[2] = 0;
+        cv[3] = 0;
+
         b[32][0] ^= k[32][0];
         b[32][1] ^= k[32][1];
         b[32][2] ^= k[32][2];
@@ -393,8 +414,19 @@ public class Serpent {
 
         // B31 bis B0
         for (int r = 31; r >= 1; r--) {
-            out = new int[4];
-            cv = new int[4];
+
+            // damit linTransform richtig arbeitet
+            out[0] = 0;
+            out[1] = 0;
+            out[2] = 0;
+            out[3] = 0;
+
+            // Auf 0 setzen, damit sBox richtig arbeitet
+            cv[0] = 0;
+            cv[1] = 0;
+            cv[2] = 0;
+            cv[3] = 0;
+
             invLinTransform(b[r], out);
 
             for (int i = 0; i < 4; i++) {
@@ -429,11 +461,24 @@ public class Serpent {
         System.out.println();
         long t1 = System.currentTimeMillis();
         for (int i = 0; i < 64000; i++) {
-//            decrypt(encrypt(value, key), key);
+            // decrypt(encrypt(value, key), key);
             encrypt(value, key);
         }
         long t2 = System.currentTimeMillis();
         System.out.println((t2 - t1) / 1000);
+
+        long t3 = System.currentTimeMillis();
+        int[] a = new int[4];
+        for (int i = 0; i < 3840000; i++) {
+            // a[0] = 0;
+            // a[1] = 0;
+            // a[2] = 0;
+            // a[3] = 0;
+            a = new int[4];
+        }
+
+        long t4 = System.currentTimeMillis();
+        System.out.println((t4 - t3));
 
     }
 }
