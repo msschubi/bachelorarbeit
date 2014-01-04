@@ -56,6 +56,32 @@ public class Serpent {
         out[posOutArr] = Utils.setBit((posOut % 32), out[posOutArr], Utils.getBit((posIn % 32), in[posIn / 32]));
     }
 
+    public static void linTransformBS(int[] cv) {
+        cv[0] = (cv[0] << 13) | (cv[0] >>> 19); // Rotation um 13
+        cv[2] = (cv[2] << 3) | (cv[2] >>> 29); // Rotation um 3
+        cv[1] = cv[1] ^ cv[0] ^ cv[2];
+        cv[3] = cv[3] ^ cv[2] ^ (cv[0] << 3);
+        cv[1] = (cv[1] << 1) | (cv[1] >>> 31); // Rotation um 1
+        cv[3] = (cv[3] << 7) | (cv[3] >>> 25); // Rotation um 7
+        cv[0] = cv[0] ^ cv[1] ^ cv[3];
+        cv[2] = cv[2] ^ cv[3] ^ (cv[1] << 7);
+        cv[0] = (cv[0] << 5) | (cv[0] >>> 27); // Rotation um 5
+        cv[2] = (cv[2] << 22) | (cv[2] >>> 10); // Rotation um 22
+    }
+
+    public static void invLinTransformBS(int[] cv) {
+        cv[2] = (cv[2] << 10) | (cv[2] >>> 22);
+        cv[0] = (cv[0] << 27) | (cv[0] >>> 5);
+        cv[2] = cv[2] ^ cv[3] ^ (cv[1] << 7);
+        cv[0] = cv[0] ^ cv[1] ^ cv[3];
+        cv[3] = (cv[3] << 25) | (cv[3] >>> 7);
+        cv[1] = (cv[1] << 31) | (cv[1] >>> 1);
+        cv[3] = cv[3] ^ cv[2] ^ (cv[0] << 3);
+        cv[1] = cv[1] ^ cv[0] ^ cv[2];
+        cv[2] = (cv[2] << 29) | (cv[2] >>> 3);
+        cv[0] = (cv[0] << 19) | (cv[0] >>> 13);
+    }
+
     /**
      * Anwendung der linearen Transformation (bzw. IP(LT(FP(x))) ) auf einen
      * Array
@@ -299,7 +325,166 @@ public class Serpent {
         }
     }
 
-    // TODO testen
+    /**
+     * Verschluesselt ein 132Bit Wort (4 x 32Bit Array) im BitSlice Modus
+     * 
+     * @param p Plaintext, welcher verschluesselt wird
+     * 
+     * @param k 33 Rundenschluessel (33x4 array)
+     * 
+     * @return Chiffretext (4 x 32Bit Array)
+     */
+    public static int[] encryptBitSlice(int[] p, int[][] k) {
+
+        int[] cv = new int[4]; // concatVector Sbox
+        int[] out = new int[4]; // Fuer linTrans
+        int[][] b = new int[33][4]; // 33 Bs gibt es (letzte Runde 2)
+
+        b[0] = initialPermutation(p);
+
+        // Round 0 - Round 30
+        // B0 bis B31
+        for (int r = 0; r <= 30; r++) {
+
+            // Auf 0 setzen, damit sBox richtig arbeitet
+            cv[0] = 0;
+            cv[1] = 0;
+            cv[2] = 0;
+            cv[3] = 0;
+
+            b[r][0] ^= k[r][0];
+            b[r][1] ^= k[r][1];
+            b[r][2] ^= k[r][2];
+            b[r][3] ^= k[r][3];
+
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 32; j += 4) {
+                    cv[i] = sBox(j, cv[i], Utils.get4Bits(j, b[r][i]), r);
+                }
+            }
+
+            // damit linTransform richtig arbeitet
+            // out[0] = 0;
+            // out[1] = 0;
+            // out[2] = 0;
+            // out[3] = 0;
+            //
+            // linTransform(cv, out);
+
+            // BitSlice lineare Transformation
+
+            // Utils.printBinary(cv);
+            // System.out.println();
+
+            linTransformBS(cv);
+
+            // Utils.printBinary(cv);
+            // System.out.println();
+            // System.out.println("--------------");
+
+            b[r + 1] = cv;
+
+        }
+
+        // s.o.
+        cv[0] = 0;
+        cv[1] = 0;
+        cv[2] = 0;
+        cv[3] = 0;
+
+        b[31][0] ^= k[31][0];
+        b[31][1] ^= k[31][1];
+        b[31][2] ^= k[31][2];
+        b[31][3] ^= k[31][3];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 32; j += 4) {
+                cv[i] = sBox(j, cv[i], Utils.get4Bits(j, b[31][i]), 7);
+            }
+        }
+        b[32][0] = k[32][0] ^ cv[0];
+        b[32][1] = k[32][1] ^ cv[1];
+        b[32][2] = k[32][2] ^ cv[2];
+        b[32][3] = k[32][3] ^ cv[3];
+
+        return finalPermutation(b[32]);
+    }
+
+    /**
+     * Entschluesselt ein 132Bit Wort (4 x 32Bit Array) im BitSlice Modus
+     * 
+     * @param c Ciphertext, welcher entschluesselt wird
+     * 
+     * @param k 33 Rundenschluessel (33x4 array)
+     * 
+     * @return Plaintext (4 x 32Bit Array)
+     */
+    public static int[] decryptBitSlice(int[] c, int[][] k) {
+        int[] cv = new int[4]; // concatVector Sbox
+        int[] out = new int[4]; // Fuer linTrans
+        int[][] b = new int[33][4]; // 33 Bs gibt es (letzte Runde 2)
+
+        b[32] = initialPermutation(c);
+
+        // Auf 0 setzen, damit sBox richtig arbeitet
+        cv[0] = 0;
+        cv[1] = 0;
+        cv[2] = 0;
+        cv[3] = 0;
+
+        b[32][0] ^= k[32][0];
+        b[32][1] ^= k[32][1];
+        b[32][2] ^= k[32][2];
+        b[32][3] ^= k[32][3];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 32; j += 4) {
+                cv[i] = invSBox(j, cv[i], Utils.get4Bits(j, b[32][i]), 7);
+            }
+        }
+
+        b[31][0] = k[31][0] ^ cv[0];
+        b[31][1] = k[31][1] ^ cv[1];
+        b[31][2] = k[31][2] ^ cv[2];
+        b[31][3] = k[31][3] ^ cv[3];
+
+        // B31 bis B0
+        for (int r = 31; r >= 1; r--) {
+
+            // damit linTransform richtig arbeitet
+            // out[0] = 0;
+            // out[1] = 0;
+            // out[2] = 0;
+            // out[3] = 0;
+
+            // Auf 0 setzen, damit sBox richtig arbeitet
+            cv[0] = 0;
+            cv[1] = 0;
+            cv[2] = 0;
+            cv[3] = 0;
+
+            // invLinTransform(b[r], out);
+            invLinTransformBS(b[r]);
+            // b[r] = out;
+
+            // inverse Lineare Transformation BitSlice
+
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 32; j += 4) {
+                    cv[i] = invSBox(j, cv[i], Utils.get4Bits(j, b[r][i]), r - 1);
+                }
+            }
+
+            b[r - 1][0] = k[r - 1][0] ^ cv[0];
+            b[r - 1][1] = k[r - 1][1] ^ cv[1];
+            b[r - 1][2] = k[r - 1][2] ^ cv[2];
+            b[r - 1][3] = k[r - 1][3] ^ cv[3];
+
+        }
+
+        return finalPermutation(b[0]);
+    }
+
     /**
      * Verschluesselt ein 132Bit Wort (4 x 32Bit Array)
      * 
@@ -373,7 +558,6 @@ public class Serpent {
         return finalPermutation(b[32]);
     }
 
-    // TODO testen
     /**
      * Entschluesselt ein 132Bit Wort (4 x 32Bit Array)
      * 
@@ -451,34 +635,70 @@ public class Serpent {
         int[][] key = getRoundKey(getPreKey(getSerpentK(Utils.getKey("test"))));
 
         int[] enc = new int[4];
-        enc = encrypt(value, key);
+        enc = encryptBitSlice(value, key);
         System.out.println(enc[0] + " " + enc[1] + " " + enc[2] + " " + enc[3]);
 
         int[] dec = new int[4];
-        dec = decrypt(enc, key);
+        dec = decryptBitSlice(enc, key);
         System.out.println(dec[0] + " " + dec[1] + " " + dec[2] + " " + dec[3]);
 
         System.out.println();
-        long t1 = System.currentTimeMillis();
-        for (int i = 0; i < 64000; i++) {
-            // decrypt(encrypt(value, key), key);
-            encrypt(value, key);
+        System.out.println();
+        // encryptBitSlice(value, key);
+        System.out.println();
+
+        // long t1 = System.currentTimeMillis();
+        // for (int i = 0; i < 64000; i++) {
+        // // decrypt(encrypt(value, key), key);
+        // encrypt(value, key);
+        // }
+        // long t2 = System.currentTimeMillis();
+        // System.out.println((t2 - t1) / 1000);
+        System.out.println("TEST-------");
+        int[] cv = { 1, 2, 3, 4 };
+        int[] test = new int[4];
+
+        linTransformBS(cv);
+        for (int i : cv) {
+            System.out.print(i + " ");
         }
-        long t2 = System.currentTimeMillis();
-        System.out.println((t2 - t1) / 1000);
+        System.out.println();
+        test[0] = 269338240;
+        test[1] = 16436;
+        test[2] = 100673541;
+        test[3] = 8392192;
+        invLinTransformBS(test);
+
+        for (int i : test) {
+            System.out.print(i + " ");
+        }
 
         long t3 = System.currentTimeMillis();
-        int[] a = new int[4];
-        for (int i = 0; i < 3840000; i++) {
-            // a[0] = 0;
-            // a[1] = 0;
-            // a[2] = 0;
-            // a[3] = 0;
-            a = new int[4];
+        // int[] cv = new int[4];
+        int[] out = new int[4];
+
+        for (int i = 0; i < 1984000; i++) {
+            // out[0] = 0;
+            // out[1] = 0;
+            // out[2] = 0;
+            // out[3] = 0;
+            //
+            // linTransform(cv, out);
+
+            // cv[0] = (cv[0] << 13) | (cv[0] >>> 19); //Rotation um 13
+            // cv[2] = (cv[2] << 3) | (cv[2] >>> 29); //Rotation um 3
+            // cv[1] = cv[1] ^ cv[0] ^ cv[2];
+            // cv[3] = cv[3] ^ cv[2] ^ (cv[0] << 3);
+            // cv[1] = (cv[1] << 1) | (cv[1] >>> 31); //Rotation um 1
+            // cv[3] = (cv[3] << 7) | (cv[3] >>> 25); //Rotation um 7
+            // cv[0] = cv[0] ^ cv[1] ^ cv[3];
+            // cv[2] = cv[2] ^ cv[3] ^ (cv[1] << 7);
+            // cv[0] = (cv[0] << 5) | (cv[0] >>> 27); //Rotation um 5
+            // cv[2] = (cv[2] << 22) | (cv[2] >>> 10); //Rotation um 22
         }
 
         long t4 = System.currentTimeMillis();
-        System.out.println((t4 - t3));
+        // System.out.println((t4 - t3));
 
     }
 }
