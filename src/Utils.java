@@ -4,7 +4,7 @@ import java.security.NoSuchAlgorithmException;
 public class Utils {
 
     /**
-     * Hilfsmethode welche die Wertigkeit der Bits anzeigt
+     * Hilfsmethode, die die Wertigkeit der Bits anzeigt
      */
     public static void printLittleEndian() {
         for (int i = 0; i < 128; i++) {
