@@ -601,10 +601,187 @@ public class Serpent {
         return finalPermutation(b[0]);
     }
 
-    public static void main(String[] args) {
+    // *********************TESTMETHODEN
 
-        int[] value = { 52, 3323, 2, 424 };
-        int[][] keyBS = getRoundKey(getPreKey(getSerpentK(Utils.getKey("test"))));
+    public static byte[] fromEvenLengthString(String hex) {
+        int len = hex.length();
+        byte[] buf = new byte[((len + 1) / 2)];
+
+        int j = 0;
+        if ((len % 2) == 1)
+            throw new IllegalArgumentException("string must have an even number of digits");
+
+        while (len > 0) {
+            buf[j++] = (byte) (fromDigit(hex.charAt(--len)) | (fromDigit(hex.charAt(--len)) << 4));
+        }
+        return buf;
+    }
+
+    public static int fromDigit(char ch) {
+        if (ch >= '0' && ch <= '9')
+            return ch - '0';
+        if (ch >= 'A' && ch <= 'F')
+            return ch - 'A' + 10;
+        if (ch >= 'a' && ch <= 'f')
+            return ch - 'a' + 10;
+        throw new IllegalArgumentException("Invalid hex digit '" + ch + "'");
+    }
+
+    public static void main(String[] args) {
+        int t00, t01, t02, t03, t04, t05, t06, t07, t08, t09, t10;
+        int t11, t12, t13, t14, t15, t16, t17, t18, t19;
+        int y0, y1, y2, y3, z;
+
+        // System.out.print("x0" + "\t" + "x1" + "\t" + "x2" + "\t" + "x3" +
+        // "\t" + "t01" + "\t" + "t02" + "\t" + "t03" + "\t" + "y3" + "\t" +
+        // "t05" + "\t"
+        // + "t06" + "\t" + "t07" + "\t" + "t08" + "\t" + "t09" + "\t" + "y2" +
+        // "\t" + "t11" + "\t" + "t12" + "\t" + "t13" + "\t" + "t14" + "\t" +
+        // "t15"
+        // + "\t" + "y0" + "\t" + "t17" + "\t" + "y1");
+        // System.out.println();
+        //
+        // for (int x0 = 1; x0 >= 0; x0--) {
+        // for (int x1 = 1; x1 >= 0; x1--) {
+        // for (int x2 = 1; x2 >= 0; x2--) {
+        // for (int x3 = 1; x3 >= 0; x3--) {
+        // t01 = x1 ^ x2;
+        // t02 = x0 | x3;
+        // t03 = x0 ^ x1;
+        // y3 = t02 ^ t01;
+        // t05 = x2 | y3;
+        // t06 = x0 ^ x3;
+        // t07 = x1 | x2;
+        // t08 = x3 & t05;
+        // t09 = t03 & t07;
+        // y2 = t09 ^ t08;
+        // t11 = t09 & y2;
+        // t12 = x2 ^ x3;
+        // t13 = t07 ^ t11;
+        // t14 = x1 & t06;
+        // t15 = t06 ^ t13;
+        // y0 = ~t15;
+        // t17 = y0 ^ t14;
+        // y1 = t12 ^ t17;
+        // System.out.print(x0 + "\t" + x1 + "\t" + x2 + "\t" + x3 + "\t" + t01
+        // + "\t" + t02 + "\t" + t03 + "\t" + y3 + "\t" + t05 + "\t" + t06
+        // + "\t" + t07 + "\t" + t08 + "\t" + t09 + "\t" + y2 + "\t" + t11 +
+        // "\t" + t12 + "\t" + t13 + "\t" + t14 + "\t" + t15 + "\t" + y0
+        // + "\t" + t17 + "\t" + y1);
+        // System.out.println();
+        //
+        // }
+        // }
+        // }
+        // }
+
+        // System.out.print("t01" + "\t" + "t02" + "\t" + "t03" + "\t" + "t04" +
+        // "\t" + "t05" + "\t" + "t06" + "\t" + "t07" + "\t" + "t08" + "\t" +
+        // "y2" + "\t"
+        // + "t10" + "\t" + "t11" + "\t" + "t12" + "\t" + "t13" + "\t" + "y3" +
+        // "\t" + "y1" + "\t" + "t16" + "\t" + "t17" + "\t" + "y0");
+        // System.out.println();
+        //
+        // for (int x0 = 1; x0 >= 0; x0--) {
+        // for (int x1 = 1; x1 >= 0; x1--) {
+        // for (int x2 = 1; x2 >= 0; x2--) {
+        // for (int x3 = 1; x3 >= 0; x3--) {
+        // t01 = x0 | x3;
+        // t02 = x2 ^ x3;
+        // t03 = ~x1;
+        // t03 += 2;
+        //
+        // t04 = x0 ^ x2;
+        // t05 = x0 | t03;
+        // t06 = x3 & t04;
+        // t07 = t01 & t02;
+        // t08 = x1 | t06;
+        // y2 = t02 ^ t05;
+        // t10 = t07 ^ t08;
+        // t11 = t01 ^ t10;
+        // t12 = y2 ^ t11;
+        // t13 = x1 & x3;
+        // y3 = ~t10;
+        // y3 += 2;
+        // y1 = t13 ^ t12;
+        // t16 = t10 | y1;
+        // t17 = t05 & t16;
+        // y0 = x2 ^ t17;
+        // System.out.print(t01 + "\t" + t02 + "\t" + t03 + "\t" + t04 + "\t" +
+        // t05 + "\t" + t06 + "\t" + t07 + "\t" + t08 + "\t" + y2 + "\t"
+        // + t10 + "\t" + t11 + "\t" + t12 + "\t" + t13 + "\t" + y3 + "\t" + y1
+        // + "\t" + t16 + "\t" + t17 + "\t" + y0);
+        // System.out.println();
+        //
+        // }
+        // }
+        // }
+        // }
+
+        for (int x3 = 1; x3 >= 0; x3--) {
+            for (int x2 = 1; x2 >= 0; x2--) {
+                for (int x1 = 1; x1 >= 0; x1--) {
+                    for (int x0 = 1; x0 >= 0; x0--) {
+                        // int res = x1 + x1 * x0 + x2 * x0 + x2 * x1 * x0 + x3
+                        // + x3 * x1 + x3 * x2 * x1;
+                        // int res = x0 + x1 + x2 + x3 + x3 * x0;
+                        // int res = 1 + x0 + x2 * x0 + x2 * x1 + x2 * x1 * x0 +
+                        // x3 * x1 + x3 * x2 * x0 + x3 * x2 * x1;
+                        int res = 1 + x0 + x1 * x0 + x2 + x2 * x0 + x2 * x1 + x2 * x1 * x0 + x3 + x3 * x2 * x0 + x3 * x2 * x1;
+                        res %= 2;
+                        System.out.println(res);
+                    }
+                }
+            }
+        }
+        // System.out.println();
+        // for (byte[] i : SerpentTables.Sbox) {
+        // for (int k = 15; k >= 0; k--) {
+        // Utils.printBinary(i[k]);
+        // System.out.println();
+        // }
+        // System.out.println();
+        // }
+
+        int x0 = 1;
+        int x1 = 1;
+        int x2 = 0;
+        int x3 = 1;
+
+        t01 = x1 ^ x2;
+        t02 = x0 | x3;
+        t03 = x0 ^ x1;
+        y3 = t02 ^ t01;
+        t05 = x2 | y3;
+        t06 = x0 ^ x3;
+        t07 = x1 | x2;
+        t08 = x3 & t05;
+        t09 = t03 & t07;
+        y2 = t09 ^ t08;
+        t11 = t09 & y2;
+        t12 = x2 ^ x3;
+        t13 = t07 ^ t11;
+        t14 = x1 & t06;
+        t15 = t06 ^ t13;
+        y0 = ~t15;
+        t17 = y0 ^ t14;
+        y1 = t12 ^ t17;
+
+        // Utils.printBinary(y0);
+        // Utils.printBinary(y1);
+        // Utils.printBinary(y2);
+        // Utils.printBinary(y3);
+
+        String hex = "00000003000000020000000100000000";
+        byte[] b = fromEvenLengthString(hex);
+
+        System.out.println();
+
+        int offset = 0;
+
+        // int[] value = { 52, 3323, 2, 424 };
+        // int[][] keyBS =
+        // getRoundKey(getPreKey(getSerpentK(Utils.getKey("test"))));
 
         // int[] enc = new int[4];
 
