@@ -37,6 +37,7 @@ public class Serpent {
         array[pos / 32] = Utils.setBit((pos % 32), array[pos / 32], bit);
     }
 
+    // TODO TEST AENDERN
     /**
      * Liest ein Bit aus einem Array der Groesse 4 und schreibt dieses Bit in
      * ein neues Array
@@ -140,6 +141,8 @@ public class Serpent {
         }
     }
 
+    
+    //TODO ZURUECK AENDERN
     /**
      * Wendet die initiale Permutation auf ein int-Array der Groeße 4 an
      * 
@@ -718,22 +721,24 @@ public class Serpent {
         // }
         // }
 
-        for (int x3 = 1; x3 >= 0; x3--) {
-            for (int x2 = 1; x2 >= 0; x2--) {
-                for (int x1 = 1; x1 >= 0; x1--) {
-                    for (int x0 = 1; x0 >= 0; x0--) {
-                        // int res = x1 + x1 * x0 + x2 * x0 + x2 * x1 * x0 + x3
-                        // + x3 * x1 + x3 * x2 * x1;
-                        // int res = x0 + x1 + x2 + x3 + x3 * x0;
-                        // int res = 1 + x0 + x2 * x0 + x2 * x1 + x2 * x1 * x0 +
-                        // x3 * x1 + x3 * x2 * x0 + x3 * x2 * x1;
-                        int res = 1 + x0 + x1 * x0 + x2 + x2 * x0 + x2 * x1 + x2 * x1 * x0 + x3 + x3 * x2 * x0 + x3 * x2 * x1;
-                        res %= 2;
-                        System.out.println(res);
-                    }
-                }
-            }
-        }
+        // for (int x3 = 1; x3 >= 0; x3--) {
+        // for (int x2 = 1; x2 >= 0; x2--) {
+        // for (int x1 = 1; x1 >= 0; x1--) {
+        // for (int x0 = 1; x0 >= 0; x0--) {
+        // // int res = x1 + x1 * x0 + x2 * x0 + x2 * x1 * x0 + x3
+        // // + x3 * x1 + x3 * x2 * x1;
+        // int res = x0 + x1 + x2 + x3 + x3 * x0;
+        // // int res = 1 + x0 + x2 * x0 + x2 * x1 + x2 * x1 * x0 +
+        // // x3 * x1 + x3 * x2 * x0 + x3 * x2 * x1;
+        // // int res = 1 + x0 + x1 * x0 + x2 + x2 * x0 + x2 * x1 +
+        // // x2 * x1 * x0 + x3 + x3 * x2 * x0 + x3 * x2 * x1;
+        // res %= 2;
+        // System.out.println(res);
+        // }
+        // }
+        // }
+        // }
+
         // System.out.println();
         // for (byte[] i : SerpentTables.Sbox) {
         // for (int k = 15; k >= 0; k--) {
@@ -743,7 +748,99 @@ public class Serpent {
         // System.out.println();
         // }
 
-        int x0 = 1;
+        // int a0 = 1;
+        // int a1 = 1;
+        // int a2 = 0;
+        // int a3 = 1;
+        // int x0 = 0;
+        // int x1 = 0;
+        // int x2 = 0;
+        // int x3 = 0;
+        // System.out.println();
+        // for (int i = 0; i < 32; i += 4) {
+        // System.out.println("setBit: " + i + "  getBit: " + i / 4 + " ");
+        // x0 = Utils.setBit(i + 0, x0, Utils.getBit(i / 4, a0));
+        // System.out.println("setBit: " + (i + 1) + "  getBit: " + i / 4 +
+        // " ");
+        // x0 = Utils.setBit(i + 1, x0, Utils.getBit(i / 4, a1));
+        // System.out.println("setBit: " + (i + 2) + "  getBit: " + i / 4 +
+        // " ");
+        // x0 = Utils.setBit(i + 2, x0, Utils.getBit(i / 4, a2));
+        // System.out.println("setBit: " + (i + 3) + "  getBit: " + i / 4 +
+        // " ");
+        // x0 = Utils.setBit(i + 3, x0, Utils.getBit(i / 4, a3));
+        // System.out.println();
+        // }
+        // System.out.println("------------");
+        //
+        // for (int i = 0; i < 32; i += 4) {
+        // System.out.println("setBit: " + i + "  getBit: " + (i + 32) / 4 +
+        // " ");
+        // x1 = Utils.setBit(i + 0, x1, Utils.getBit((i + 32) / 4, a0));
+        // System.out.println("setBit: " + (i + 1) + "  getBit: " + (i + 32) / 4
+        // + " ");
+        // x1 = Utils.setBit(i + 1, x1, Utils.getBit((i + 32) / 4, a1));
+        // System.out.println("setBit: " + (i + 2) + "  getBit: " + (i + 32) / 4
+        // + " ");
+        // x1 = Utils.setBit(i + 2, x1, Utils.getBit((i + 32) / 4, a2));
+        // System.out.println("setBit: " + (i + 3) + "  getBit: " + (i + 32) / 4
+        // + " ");
+        // x1 = Utils.setBit(i + 3, x1, Utils.getBit((i + 32) / 4, a3));
+        // System.out.println();
+        // }
+        // System.out.println("------------");
+        // for (int i = 0; i < 32; i += 4) {
+        // System.out.println("setBit: " + i + "  getBit: " + (i + 64) / 4 +
+        // " ");
+        // x2 = Utils.setBit(i + 0, x2, Utils.getBit((i + 64) / 4, a0));
+        // System.out.println("setBit: " + (i + 1) + "  getBit: " + (i + 64) / 4
+        // + " ");
+        // x2 = Utils.setBit(i + 1, x2, Utils.getBit((i + 64) / 4, a1));
+        // System.out.println("setBit: " + (i + 2) + "  getBit: " + (i + 64) / 4
+        // + " ");
+        // x2 = Utils.setBit(i + 2, x2, Utils.getBit((i + 64) / 4, a2));
+        // System.out.println("setBit: " + (i + 3) + "  getBit: " + (i + 64) / 4
+        // + " ");
+        // x2 = Utils.setBit(i + 3, x2, Utils.getBit((i + 64) / 4, a3));
+        // System.out.println();
+        // }
+        // System.out.println("------------");
+        // for (int i = 0; i < 32; i += 4) {
+        // System.out.println("setBit: " + i + "  getBit: " + (i + 96) / 4 +
+        // " ");
+        // x3 = Utils.setBit(i + 0, x3, Utils.getBit((i + 96) / 4, a0));
+        // System.out.println("setBit: " + (i + 1) + "  getBit: " + (i + 96) / 4
+        // + " ");
+        // x3 = Utils.setBit(i + 1, x3, Utils.getBit((i + 96) / 4, a1));
+        // System.out.println("setBit: " + (i + 2) + "  getBit: " + (i + 96) / 4
+        // + " ");
+        // x3 = Utils.setBit(i + 2, x3, Utils.getBit((i + 96) / 4, a2));
+        // System.out.println("setBit: " + (i + 3) + "  getBit: " + (i + 96) / 4
+        // + " ");
+        // x3 = Utils.setBit(i + 3, x3, Utils.getBit((i + 96) / 4, a3));
+        // System.out.println();
+        // }
+        //
+        // Utils.printBinary(a0);
+        // System.out.println();
+        // Utils.printBinary(a1);
+        // System.out.println();
+        // Utils.printBinary(a2);
+        // System.out.println();
+        // Utils.printBinary(a3);
+        // System.out.println();
+        // System.out.println();
+        //
+        // Utils.printBinary(x0);
+        // System.out.println();
+        // Utils.printBinary(x1);
+        // System.out.println();
+        // Utils.printBinary(x2);
+        // System.out.println();
+        // Utils.printBinary(x3);
+        // System.out.println();
+
+        int x0 = 5;
         int x1 = 1;
         int x2 = 0;
         int x3 = 1;
@@ -752,6 +849,11 @@ public class Serpent {
         t02 = x0 | x3;
         t03 = x0 ^ x1;
         y3 = t02 ^ t01;
+
+        // System.out.println();
+        // Utils.printBinary(y3);
+        // System.out.println();
+
         t05 = x2 | y3;
         t06 = x0 ^ x3;
         t07 = x1 | x2;
@@ -767,10 +869,37 @@ public class Serpent {
         t17 = y0 ^ t14;
         y1 = t12 ^ t17;
 
+        System.out.println(y0 + " " + y1 + " " + y2 + " " + y3);
+
+        int[] cv = new int[4];
+        int x[] = { 1, 1, 0, 1 };
+
+         x[3] = 5;
+         x[2] = 1;
+         x[1] = 0;
+         x[0] = 1;
+
+        x = initialPermutation(x);
+        System.out.println(x[0] + " " + x[1] + " " + x[2] + " " + x[3]);
+
+        for (int i = 0; i <= 3; i++) {
+            for (int j = 0; j < 32; j += 4) {
+                cv[i] = sBox(j, cv[i], Utils.get4Bits(j, x[i]), 0);
+            }
+            // System.out.println((i - 3) * -1);
+        }
+        cv = finalPermutation(cv);
+
+        System.out.println(cv[3] + " " + cv[2] + " " + cv[1] + " " + cv[0]);
+
         // Utils.printBinary(y0);
         // Utils.printBinary(y1);
         // Utils.printBinary(y2);
         // Utils.printBinary(y3);
+        System.out.println();
+        int zahl = 48;
+        zahl = Utils.get4BitsTEST(4, zahl);
+        System.out.println(zahl);
 
         String hex = "00000003000000020000000100000000";
         byte[] b = fromEvenLengthString(hex);

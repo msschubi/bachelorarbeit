@@ -56,6 +56,13 @@ public class Utils {
         return bit == 1 ? (value | flag) : (value & (~flag));
     }
 
+    // TODO TEST AENDERN
+
+    public static int setBitTEST(int pos, int value, int bit) {
+        int flag = 1 << (31 + pos); // little Endian
+        return bit == 1 ? (value | flag) : (value & (~flag));
+    }
+
     /**
      * Gibt zurueck ob Bit an abgefragter Stelle gesetzt ist in littleEndian
      * 
@@ -67,6 +74,15 @@ public class Utils {
      */
     public static int getBit(int pos, int value) {
         int offset = 1 << (31 - pos); // little Endian
+        if ((value & offset) != 0)
+            return 1;
+        else
+            return 0;
+    }
+
+    // TODO TEST
+    public static int getBitTEST(int pos, int value) {
+        int offset = 1 << (0 + pos); // little Endian
         if ((value & offset) != 0)
             return 1;
         else
@@ -107,7 +123,13 @@ public class Utils {
         return ((value & ones) >>> (31 - pos - 3));
     }
 
-    //TODO testen
+    // TODO TEST
+    public static int get4BitsTEST(int pos, int value) {
+        int ones = 15 << (pos);
+        return ((value & ones) >>> (pos));
+    }
+
+    // TODO testen
     /**
      * Keystring wird zu 256 Bit gehasht
      * 
