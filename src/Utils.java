@@ -39,6 +39,7 @@ public class Utils {
         }
     }
 
+
     /**
      * Setzt/entfernt ein Bit an der gewuenschten Stelle einer Zahl in
      * littleEndian
