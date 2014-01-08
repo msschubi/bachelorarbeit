@@ -1,3 +1,5 @@
+import sun.net.www.content.text.plain;
+
 /**
  * Serpent Implementierung mit Table-LookUp
  * 
@@ -441,36 +443,49 @@ public class Serpent {
      * @return Chiffretext (4 x 32Bit Array)
      */
     public static int[] encrypt(int[] plaintext, int[][] k) {
-
         int[][] b = new int[33][4]; // 33 Bs gibt es (letzte Runde 2)
-
+        int[][] c = new int[33][4]; // 33 Bs gibt es (letzte Runde 2)
+        int[] cv = new int[4]; // concatVector Sbox
+        int[] out = new int[4]; // Fuer linTrans
         // TEST**************
 
-        b[0] = plaintext;
+        int[] xBS = { plaintext[0], plaintext[1], plaintext[2], plaintext[3] };
+        int[] kBS = { k[0][0], k[0][1], k[0][2], k[0][3] };
 
-        // RUNDE 0 - 30
+        SerpentBitSlice.sBoxBitSlice(7, xBS);
+        xBS[0] ^= kBS[0];
+        xBS[1] ^= kBS[1];
+        xBS[2] ^= kBS[2];
+        xBS[3] ^= kBS[3];
 
-        for (int r = 0; r <= 30; r++) {
-            b[r][0] ^= k[r][0];
-            b[r][1] ^= k[r][1];
-            b[r][2] ^= k[r][2];
-            b[r][3] ^= k[r][3];
+        System.out.println(xBS[3] + " " + xBS[2] + " " + xBS[1] + " " + xBS[0]);
 
-            SerpentBitSlice.sBoxBitSlice(r % 8, b[r]);
-            linTransformBS(b[r]);
+        int x[] = { plaintext[3], plaintext[2], plaintext[1], plaintext[0] };
+        int kn[] = { k[0][3], k[0][2], k[0][1], k[0][0] };
 
-            b[r + 1][0] = b[r][0];
-            b[r + 1][1] = b[r][1];
-            b[r + 1][2] = b[r][2];
-            b[r + 1][3] = b[r][3];
+        x = initialPermutation(x);
+        kn = initialPermutation(kn);
+        // System.out.println(x[0] + " " + x[1] + " " + x[2] + " " + x[3]);
+
+        for (int i = 0; i <= 3; i++) {
+            for (int j = 0; j < 32; j += 4) {
+                cv[i] = sBox(j, cv[i], Utils.get4Bits(j, x[i]), 7);
+            }
         }
+        cv[0] ^= kn[0];
+        cv[1] ^= kn[1];
+        cv[2] ^= kn[2];
+        cv[3] ^= kn[3];
+
+        cv = finalPermutation(cv);
+
+        System.out.println(cv[0] + " " + cv[1] + " " + cv[2] + " " + cv[3]);
 
         // TESTENDE**************
 
-        int[] cv = new int[4]; // concatVector Sbox
-        int[] out = new int[4]; // Fuer linTrans
+        // int[] out = new int[4]; // Fuer linTrans
 
-        b[0] = initialPermutation(p);
+        b[0] = initialPermutation(plaintext);
 
         // Round 0 - Round 30
         // B0 bis B31
@@ -626,10 +641,6 @@ public class Serpent {
     }
 
     public static void main(String[] args) {
-        int t00, t01, t02, t03, t04, t05, t06, t07, t08, t09, t10;
-        int t11, t12, t13, t14, t15, t16, t17, t18, t19;
-        int y0, y1, y2, y3, z;
-
         int[] xBS = { 1, 1, 0, 1 };
 
         for (int i = 0; i < 8; i++) {
@@ -674,22 +685,24 @@ public class Serpent {
 
         int[] value = { 52, 3323, 2, 424 };
         int[][] keyBS = getRoundKey(getPreKey(getSerpentK(Utils.getKey("test"))));
-        int[] enc = encryptBitSlice(value, keyBS);
-        int[] dec = decryptBitSlice(enc, keyBS);
+        // int[] enc = encryptBitSlice(value, keyBS);
+        // int[] dec = decryptBitSlice(enc, keyBS);
 
-        for (int i : dec) {
-            System.out.print(i + " ");
-        }
+        encrypt(value, keyBS);
+
+        // for (int i : dec) {
+        // System.out.print(i + " ");
+        // }
 
         long t1 = System.currentTimeMillis();
-        for (int i = 0; i < 3200000; i++) {
-            // decrypt(encrypt(value, keyBS), keyBS);
-            // encrypt(value, key);
-            decryptBitSlice(encryptBitSlice(value, keyBS), keyBS);
-            // System.out.println(enc[0] + " " + enc[1] + " " + enc[2] + " " +
-            // enc[3]);
-        }
+        // for (int i = 0; i < 3200000; i++) {
+        // decrypt(encrypt(value, keyBS), keyBS);
+        // encrypt(value, key);
+        // decryptBitSlice(encryptBitSlice(value, keyBS), keyBS);
+        // System.out.println(enc[0] + " " + enc[1] + " " + enc[2] + " " +
+        // enc[3]);
+        // }
         long t2 = System.currentTimeMillis();
-        System.out.println((t2 - t1) / 1000);
+        // System.out.println((t2 - t1) / 1000);
     }
 }
