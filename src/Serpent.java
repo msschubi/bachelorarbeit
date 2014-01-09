@@ -357,7 +357,6 @@ public class Serpent {
         b[0] = plaintext;
 
         // RUNDE 0 - 30
-
         for (int r = 0; r <= 30; r++) {
             b[r][0] ^= k[r][0];
             b[r][1] ^= k[r][1];
@@ -384,7 +383,7 @@ public class Serpent {
         b[32][0] = b[31][0] ^ k[32][0];
         b[32][1] = b[31][1] ^ k[32][1];
         b[32][2] = b[31][2] ^ k[32][2];
-        b[32][3] = b[31][3] ^ k[32][2];
+        b[32][3] = b[31][3] ^ k[32][3];
 
         return b[32];
     }
@@ -406,7 +405,7 @@ public class Serpent {
         c[31][0] = c[32][0] ^ k[32][0];
         c[31][1] = c[32][1] ^ k[32][1];
         c[31][2] = c[32][2] ^ k[32][2];
-        c[31][3] = c[32][3] ^ k[32][2];
+        c[31][3] = c[32][3] ^ k[32][3];
 
         SerpentBitSlice.sBoxInvBitSlice(31 % 8, c[31]);
 
@@ -444,80 +443,31 @@ public class Serpent {
      */
     public static int[] encrypt(int[] plaintext, int[][] k) {
         int[][] b = new int[33][4]; // 33 Bs gibt es (letzte Runde 2)
-        int[][] c = new int[33][4]; // 33 Bs gibt es (letzte Runde 2)
         int[] cv = new int[4]; // concatVector Sbox
-        int[] out = new int[4]; // Fuer linTrans
         int[] temp = new int[4];
-        // TEST**************
-
-        b[0] = plaintext.clone();
-
-        // RUNDE 0 - 30
-        // System.out.println(k[0][0]);
-        for (int r = 0; r <= 30; r++) {
-
-            b[r][0] ^= k[r][0];
-            b[r][1] ^= k[r][1];
-            b[r][2] ^= k[r][2];
-            b[r][3] ^= k[r][3];
-
-            SerpentBitSlice.sBoxBitSlice(r % 8, b[r]);
-
-            linTransformBS(b[r]);
-
-            b[r + 1][0] = b[r][0];
-            b[r + 1][1] = b[r][1];
-            b[r + 1][2] = b[r][2];
-            b[r + 1][3] = b[r][3];
-
-            // if (r == 0) {
-            // // b[r+1] = finalPermutation(b[r+1]);
-            // // c[r] = out;
-            // System.out.println(b[r+1][0] + " " + b[r+1][1] + " " + b[r+1][2]
-            // + " " + b[r+1][3]);
-            // }
-
-        }
-        
-        // RUNDE 31
-        b[31][0] ^= k[31][0];
-        b[31][1] ^= k[31][1];
-        b[31][2] ^= k[31][2];
-        b[31][3] ^= k[31][3];
-        
-
-        SerpentBitSlice.sBoxBitSlice(31 % 8, b[31]);
-        
-//        System.out.println(b[31][0] + " " + b[31][1] + " " + b[31][2] + " " + b[31][3]);
-
-        b[32][0] = b[31][0] ^ k[32][0];
-        b[32][1] = b[31][1] ^ k[32][1];
-        b[32][2] = b[31][2] ^ k[32][2];
-        b[32][3] = b[31][3] ^ k[32][2];
-
-        // return b[32];
-
-        // System.out.println();
-        System.out.println(b[32][0] + " " + b[32][1] + " " + b[32][2] + " " + b[32][3]);
+        int kn[] = new int[4];
 
         // Anpassung an andere Reihenfolge der Autoren (MSB und LSB vertauscht)
-        c[0][0] = plaintext[3];
-        c[0][1] = plaintext[2];
-        c[0][2] = plaintext[1];
-        c[0][3] = plaintext[0];
+        b[0][0] = plaintext[3];
+        b[0][1] = plaintext[2];
+        b[0][2] = plaintext[1];
+        b[0][3] = plaintext[0];
 
-        c[0] = initialPermutation(c[0]);
+        b[0] = initialPermutation(b[0]);
 
         for (int r = 0; r <= 30; r++) {
 
-            int kn[] = { k[r][3], k[r][2], k[r][1], k[r][0] };
+            kn[0] = k[r][3];
+            kn[1] = k[r][2];
+            kn[2] = k[r][1];
+            kn[3] = k[r][0];
 
             kn = initialPermutation(kn);
 
-            c[r][0] ^= kn[0];
-            c[r][1] ^= kn[1];
-            c[r][2] ^= kn[2];
-            c[r][3] ^= kn[3];
+            b[r][0] ^= kn[0];
+            b[r][1] ^= kn[1];
+            b[r][2] ^= kn[2];
+            b[r][3] ^= kn[3];
 
             cv[0] = 0;
             cv[1] = 0;
@@ -526,7 +476,7 @@ public class Serpent {
 
             for (int i = 0; i <= 3; i++) {
                 for (int j = 0; j < 32; j += 4) {
-                    cv[i] = sBox(j, cv[i], Utils.get4Bits(j, c[r][i]), r);
+                    cv[i] = sBox(j, cv[i], Utils.get4Bits(j, b[r][i]), r);
                 }
             }
 
@@ -548,26 +498,25 @@ public class Serpent {
 
             cv = initialPermutation(cv);
 
-            // linTransform(cv, out);
+            b[r + 1][0] = cv[0];
+            b[r + 1][1] = cv[1];
+            b[r + 1][2] = cv[2];
+            b[r + 1][3] = cv[3];
 
-            c[r + 1][0] = cv[0];
-            c[r + 1][1] = cv[1];
-            c[r + 1][2] = cv[2];
-            c[r + 1][3] = cv[3];
         }
-        
 
-        int kn[] = { k[31][3], k[31][2], k[31][1], k[31][0] };
+        kn[0] = k[31][3];
+        kn[1] = k[31][2];
+        kn[2] = k[31][1];
+        kn[3] = k[31][0];
 
         kn = initialPermutation(kn);
 
-        c[31][0] ^= kn[0];
-        c[31][1] ^= kn[1];
-        c[31][2] ^= kn[2];
-        c[31][3] ^= kn[3];
-        
-        
-        
+        b[31][0] ^= kn[0];
+        b[31][1] ^= kn[1];
+        b[31][2] ^= kn[2];
+        b[31][3] ^= kn[3];
+
         cv[0] = 0;
         cv[1] = 0;
         cv[2] = 0;
@@ -575,11 +524,9 @@ public class Serpent {
 
         for (int i = 0; i <= 3; i++) {
             for (int j = 0; j < 32; j += 4) {
-                cv[i] = sBox(j, cv[i], Utils.get4Bits(j, c[31][i]), 31);
+                cv[i] = sBox(j, cv[i], Utils.get4Bits(j, b[31][i]), 31);
             }
         }
-        
-        
 
         kn[0] = k[32][3];
         kn[1] = k[32][2];
@@ -588,112 +535,20 @@ public class Serpent {
 
         kn = initialPermutation(kn);
 
-        c[32][0] = cv[0] ^ k[32][0];
-        c[32][1] = cv[1] ^ k[32][1];
-        c[32][2] = cv[2] ^ k[32][2];
-        c[32][3] = cv[3] ^ k[32][2];
+        b[32][0] = cv[0] ^ kn[0];
+        b[32][1] = cv[1] ^ kn[1];
+        b[32][2] = cv[2] ^ kn[2];
+        b[32][3] = cv[3] ^ kn[3];
 
-        c[32] = finalPermutation(c[32]);
-//        c[31] = finalPermutation(cv);
-//        System.out.println(c[31][3] + " " + c[31][2] + " " + c[31][1] + " " + c[31][0]);
+        b[32] = finalPermutation(b[32]);
 
-        // System.out.println();
-        System.out.println(c[32][0] + " " + c[32][1] + " " + c[32][2] + " " + c[32][3]);
+        // umdrehen für einheitliche ausgabe
+        temp[0] = b[32][3];
+        temp[1] = b[32][2];
+        temp[2] = b[32][1];
+        temp[3] = b[32][0];
 
-        // int[] xBS = { plaintext[0], plaintext[1], plaintext[2], plaintext[3]
-        // };
-        // int[] kBS = { k[0][0], k[0][1], k[0][2], k[0][3] };
-        //
-        // SerpentBitSlice.sBoxBitSlice(7, xBS);
-        // xBS[0] ^= kBS[0];
-        // xBS[1] ^= kBS[1];
-        // xBS[2] ^= kBS[2];
-        // xBS[3] ^= kBS[3];
-        //
-        // System.out.println(xBS[3] + " " + xBS[2] + " " + xBS[1] + " " +
-        // xBS[0]);
-        //
-        // int x[] = { plaintext[3], plaintext[2], plaintext[1], plaintext[0] };
-        // int kn[] = { k[0][3], k[0][2], k[0][1], k[0][0] };
-        //
-        // x = initialPermutation(x);
-        // kn = initialPermutation(kn);
-        // System.out.println(x[0] + " " + x[1] + " " + x[2] + " " + x[3]);
-
-        // for (int i = 0; i <= 3; i++) {
-        // for (int j = 0; j < 32; j += 4) {
-        // cv[i] = sBox(j, cv[i], Utils.get4Bits(j, x[i]), 7);
-        // }
-        // }
-        // cv[0] ^= kn[0];
-        // cv[1] ^= kn[1];
-        // cv[2] ^= kn[2];
-        // cv[3] ^= kn[3];
-        //
-        // cv = finalPermutation(cv);
-        //
-        // System.out.println(cv[0] + " " + cv[1] + " " + cv[2] + " " + cv[3]);
-
-        // TESTENDE**************
-
-        // int[] out = new int[4]; // Fuer linTrans
-
-        b[0] = initialPermutation(plaintext);
-
-        // Round 0 - Round 30
-        // B0 bis B31
-        for (int r = 0; r <= 30; r++) {
-
-            // Auf 0 setzen, damit sBox richtig arbeitet
-            cv[0] = 0;
-            cv[1] = 0;
-            cv[2] = 0;
-            cv[3] = 0;
-
-            b[r][0] ^= k[r][0];
-            b[r][1] ^= k[r][1];
-            b[r][2] ^= k[r][2];
-            b[r][3] ^= k[r][3];
-
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 32; j += 4) {
-                    cv[i] = sBox(j, cv[i], Utils.get4Bits(j, b[r][i]), r);
-                }
-            }
-
-            // damit linTransform richtig arbeitet
-            out[0] = 0;
-            out[1] = 0;
-            out[2] = 0;
-            out[3] = 0;
-
-            linTransform(cv, out);
-            b[r + 1] = out;
-
-        }
-
-        // s.o.
-        cv[0] = 0;
-        cv[1] = 0;
-        cv[2] = 0;
-        cv[3] = 0;
-
-        b[31][0] ^= k[31][0];
-        b[31][1] ^= k[31][1];
-        b[31][2] ^= k[31][2];
-        b[31][3] ^= k[31][3];
-
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 32; j += 4) {
-                cv[i] = sBox(j, cv[i], Utils.get4Bits(j, b[31][i]), 7);
-            }
-        }
-        b[32][0] = k[32][0] ^ cv[0];
-        b[32][1] = k[32][1] ^ cv[1];
-        b[32][2] = k[32][2] ^ cv[2];
-        b[32][3] = k[32][3] ^ cv[3];
-
-        return finalPermutation(b[32]);
+        return temp;
     }
 
     /**
@@ -706,144 +561,133 @@ public class Serpent {
      * @return Plaintext (4 x 32Bit Array)
      */
     public static int[] decrypt(int[] c, int[][] k) {
-        int[] cv = new int[4]; // concatVector Sbox
-        int[] out = new int[4]; // Fuer linTrans
-        int[][] b = new int[33][4]; // 33 Bs gibt es (letzte Runde 2)
+        int[] cv2 = new int[4]; // concatVector Sbox
+        int[][] b2 = new int[33][4]; // 33 Bs gibt es (letzte Runde 2)
+        int[] temp2 = new int[4];
+        int[] kn2 = new int[4];
 
-        b[32] = initialPermutation(c);
+        temp2[0] = c[3];
+        temp2[1] = c[2];
+        temp2[2] = c[1];
+        temp2[3] = c[0];
 
-        // Auf 0 setzen, damit sBox richtig arbeitet
-        cv[0] = 0;
-        cv[1] = 0;
-        cv[2] = 0;
-        cv[3] = 0;
+        b2[32] = initialPermutation(temp2);
 
-        b[32][0] ^= k[32][0];
-        b[32][1] ^= k[32][1];
-        b[32][2] ^= k[32][2];
-        b[32][3] ^= k[32][3];
+        kn2[0] = k[32][3];
+        kn2[1] = k[32][2];
+        kn2[2] = k[32][1];
+        kn2[3] = k[32][0];
 
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 32; j += 4) {
-                cv[i] = invSBox(j, cv[i], Utils.get4Bits(j, b[32][i]), 7);
-            }
-        }
+        kn2 = initialPermutation(kn2);
 
-        b[31][0] = k[31][0] ^ cv[0];
-        b[31][1] = k[31][1] ^ cv[1];
-        b[31][2] = k[31][2] ^ cv[2];
-        b[31][3] = k[31][3] ^ cv[3];
-
-        // B31 bis B0
-        for (int r = 31; r >= 1; r--) {
-
-            // damit linTransform richtig arbeitet
-            out[0] = 0;
-            out[1] = 0;
-            out[2] = 0;
-            out[3] = 0;
-
-            // Auf 0 setzen, damit sBox richtig arbeitet
-            cv[0] = 0;
-            cv[1] = 0;
-            cv[2] = 0;
-            cv[3] = 0;
-
-            invLinTransform(b[r], out);
-
-            for (int i = 0; i < 4; i++) {
-                for (int j = 0; j < 32; j += 4) {
-                    cv[i] = invSBox(j, cv[i], Utils.get4Bits(j, out[i]), r - 1);
-                }
-            }
-
-            b[r - 1][0] = k[r - 1][0] ^ cv[0];
-            b[r - 1][1] = k[r - 1][1] ^ cv[1];
-            b[r - 1][2] = k[r - 1][2] ^ cv[2];
-            b[r - 1][3] = k[r - 1][3] ^ cv[3];
-
-        }
-
-        return finalPermutation(b[0]);
-    }
-
-    // *********************TESTMETHODEN
-
-    public static byte[] fromEvenLengthString(String hex) {
-        int len = hex.length();
-        byte[] buf = new byte[((len + 1) / 2)];
-
-        int j = 0;
-        if ((len % 2) == 1)
-            throw new IllegalArgumentException("string must have an even number of digits");
-
-        while (len > 0) {
-            buf[j++] = (byte) (fromDigit(hex.charAt(--len)) | (fromDigit(hex.charAt(--len)) << 4));
-        }
-        return buf;
-    }
-
-    public static int fromDigit(char ch) {
-        if (ch >= '0' && ch <= '9')
-            return ch - '0';
-        if (ch >= 'A' && ch <= 'F')
-            return ch - 'A' + 10;
-        if (ch >= 'a' && ch <= 'f')
-            return ch - 'a' + 10;
-        throw new IllegalArgumentException("Invalid hex digit '" + ch + "'");
-    }
-
-    public static void main(String[] args) {
-        int[] xBS = { 1, 1, 0, 1 };
-
-        for (int i = 0; i < 8; i++) {
-            SerpentBitSlice.sBoxBitSlice(i, xBS);
-        }
-
-        for (int i = 7; i >= 0; i--) {
-            SerpentBitSlice.sBoxInvBitSlice(i, xBS);
-        }
-
-        // System.out.println(xBS[3] + " " + xBS[2] + " " + xBS[1] + " " +
-        // xBS[0]);
-
-        int[] cv = new int[4];
-        int x[] = { 1, 1, 0, 1 };
-
-        x[3] = 1;
-        x[2] = 1;
-        x[1] = 0;
-        x[0] = 1;
-
-        x = initialPermutation(x);
-        // System.out.println(x[0] + " " + x[1] + " " + x[2] + " " + x[3]);
+        b2[31][0] = b2[32][0] ^ kn2[0];
+        b2[31][1] = b2[32][1] ^ kn2[1];
+        b2[31][2] = b2[32][2] ^ kn2[2];
+        b2[31][3] = b2[32][3] ^ kn2[3];
 
         for (int i = 0; i <= 3; i++) {
             for (int j = 0; j < 32; j += 4) {
-                cv[i] = sBox(j, cv[i], Utils.get4Bits(j, x[i]), 7);
+                cv2[i] = invSBox(j, cv2[i], Utils.get4Bits(j, b2[31][i]), 31);
             }
-            // System.out.println((i - 3) * -1);
         }
 
-        cv = finalPermutation(cv);
+        kn2[0] = k[31][3];
+        kn2[1] = k[31][2];
+        kn2[2] = k[31][1];
+        kn2[3] = k[31][0];
 
-        // System.out.println(cv[0] + " " + cv[1] + " " + cv[2] + " " + cv[3]);
+        kn2 = initialPermutation(kn2);
 
-        String hex = "00000003000000020000000100000000";
-        byte[] b = fromEvenLengthString(hex);
+        b2[31][0] = cv2[0] ^ kn2[0];
+        b2[31][1] = cv2[1] ^ kn2[1];
+        b2[31][2] = cv2[2] ^ kn2[2];
+        b2[31][3] = cv2[3] ^ kn2[3];
 
+        // **eisnchub
+        for (int r = 31; r >= 1; r--) {
+
+            b2[r - 1][0] = b2[r][0];
+            b2[r - 1][1] = b2[r][1];
+            b2[r - 1][2] = b2[r][2];
+            b2[r - 1][3] = b2[r][3];
+
+            b2[r - 1] = finalPermutation(b2[r - 1]);
+
+            // Format wechseln
+            temp2[0] = b2[r - 1][3];
+            temp2[1] = b2[r - 1][2];
+            temp2[2] = b2[r - 1][1];
+            temp2[3] = b2[r - 1][0];
+
+            invLinTransformBS(temp2);
+
+            // Format zurueckwechseln
+            b2[r - 1][0] = temp2[3];
+            b2[r - 1][1] = temp2[2];
+            b2[r - 1][2] = temp2[1];
+            b2[r - 1][3] = temp2[0];
+
+            b2[r - 1] = initialPermutation(b2[r - 1]);
+
+            cv2[0] = 0;
+            cv2[1] = 0;
+            cv2[2] = 0;
+            cv2[3] = 0;
+
+            for (int i = 0; i <= 3; i++) {
+                for (int j = 0; j < 32; j += 4) {
+                    cv2[i] = invSBox(j, cv2[i], Utils.get4Bits(j, b2[r - 1][i]), r - 1);
+                }
+            }
+
+            kn2[0] = k[r - 1][3];
+            kn2[1] = k[r - 1][2];
+            kn2[2] = k[r - 1][1];
+            kn2[3] = k[r - 1][0];
+
+            kn2 = initialPermutation(kn2);
+
+            b2[r - 1][0] = kn2[0] ^ cv2[0];
+            b2[r - 1][1] = kn2[1] ^ cv2[1];
+            b2[r - 1][2] = kn2[2] ^ cv2[2];
+            b2[r - 1][3] = kn2[3] ^ cv2[3];
+        }
         System.out.println();
 
-        int offset = 0;
+        b2[0] = finalPermutation(b2[0]);
+
+        temp2[0] = b2[0][3];
+        temp2[1] = b2[0][2];
+        temp2[2] = b2[0][1];
+        temp2[3] = b2[0][0];
+
+        return temp2;
+    }
+
+    public static void main(String[] args) {
 
         int[] value = { 52, 3323, 2, 424 };
+        int[] value2 = value.clone();
+
         int[][] keyBS = getRoundKey(getPreKey(getSerpentK(Utils.getKey("test"))));
-        // int[] enc = encryptBitSlice(value, keyBS);
-        // int[] dec = decryptBitSlice(enc, keyBS);
+        int[][] keyBS2 = keyBS.clone();
 
-        encrypt(value, keyBS);
+        int[] enc = encrypt(value, keyBS);
+        int[] dec = decrypt(enc, keyBS);
 
-        // for (int i : dec) {
+        // int[] enc2 = encrypt(value2, keyBS2);
+        // int[] dec2 = decryptBitSlice(enc2, keyBS2);
+
+        for (int i : enc) {
+            System.out.print(i + " ");
+        }
+        System.out.println();
+
+        for (int i : dec) {
+            System.out.print(i + " ");
+        }
+        // System.out.println();
+        // for (int i : enc2) {
         // System.out.print(i + " ");
         // }
 
