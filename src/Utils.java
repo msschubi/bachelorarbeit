@@ -29,6 +29,18 @@ public class Utils {
     }
 
     /**
+     * Hilfsmethode zum Ausgeben eines int-Wertes als Binaerzahl
+     * 
+     * @param decimalValue Dezimalzahl
+     * @param offset # Stellen die ausgegeben werden sollen
+     */
+    public static void printBinary(int decimalValue, int offset) {
+        for (int i = 32-offset; i <= 31; i++) {
+            System.out.printf("%-4d", getBit(i, decimalValue));
+        }
+    }
+
+    /**
      * Hilfsmethode zum Ausgeben eines int-Array-Wertes als Binaerzahl
      * 
      * @param decimalValue Dezimalzahl-Array
@@ -38,7 +50,6 @@ public class Utils {
             printBinary(decimalValue[k]);
         }
     }
-
 
     /**
      * Setzt/entfernt ein Bit an der gewuenschten Stelle einer Zahl in
