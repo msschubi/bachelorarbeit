@@ -9,8 +9,8 @@ public class Analyse {
     private static void diff(int x1, int x2) {
         Utils.printBinary(x1 ^ x2, 4);
     }
-
-    public static void main(String[] args) {
+    
+    public static void differentialAnalysis(boolean latex) {
         s0 = new int[16][16];
         s1 = new int[16][16];
         s2 = new int[16][16];
@@ -87,43 +87,104 @@ public class Analyse {
             for (int i = 0; i < 16; i++) {
                 System.out.print("\t" + i);
             }
-
-            System.out.println("\n");
+                System.out.println("\n");
             for (int i = 0; i < 16; i++) {
-                System.out.print(i + "\t");
+                if (latex)
+                    System.out.print(i + "&");
+                else
+                    System.out.print(i + "\t");
                 for (int o = 0; o < 16; o++) {
 
                     switch (s) {
                         case 0:
-                            System.out.print(s0[i][o] + "\t");
+                            if (latex)
+                                System.out.print(s0[i][o] + "&");
+                            else
+                                System.out.print(s0[i][o] + "\t");
                             break;
                         case 1:
-                            System.out.print(s1[i][o] + "\t");
+                            if (latex)
+                                System.out.print(s1[i][o] + "&");
+                            else
+                                System.out.print(s1[i][o] + "\t");
                             break;
                         case 2:
-                            System.out.print(s2[i][o] + "\t");
+                            if (latex)
+                                System.out.print(s2[i][o] + "&");
+                            else
+                                System.out.print(s2[i][o] + "\t");
                             break;
                         case 3:
-                            System.out.print(s3[i][o] + "\t");
+                            if (latex)
+                                System.out.print(s3[i][o] + "&");
+                            else
+                                System.out.print(s3[i][o] + "\t");
                             break;
                         case 4:
-                            System.out.print(s4[i][o] + "\t");
+                            if (latex)
+                                System.out.print(s4[i][o] + "&");
+                            else
+                                System.out.print(s4[i][o] + "\t");
                             break;
                         case 5:
-                            System.out.print(s5[i][o] + "\t");
+                            if (latex)
+                                System.out.print(s5[i][o] + "&");
+                            else
+                                System.out.print(s5[i][o] + "\t");
                             break;
                         case 6:
-                            System.out.print(s6[i][o] + "\t");
+                            if (latex)
+                                System.out.print(s6[i][o] + "&");
+                            else
+                                System.out.print(s6[i][o] + "\t");
                             break;
                         case 7:
-                            System.out.print(s7[i][o] + "\t");
+                            if (latex)
+                                System.out.print(s7[i][o] + "&");
+                            else
+                                System.out.print(s7[i][o] + "\t");
                             break;
                     }
                 }
+                if(latex)
+                    System.out.println("\n \\hline");
+                else
                 System.out.println();
             }
             System.out.println("\n");
         }
+    }
+    
+    public static void linearAnalysis() {
+        int counter = 0;
+        int gesamt = 0;
+        int c;
+        int kx, px, cx;
+        //for(int k = 0; k<16; k++) {
+            for(int p = 0; p<16; p++) {
+              c = SerpentTables.Sbox[2][p];
+                  
+    //              kx = (((k&8)>>>3)^((k&4)>>>2)^((k&2)>>>1^(k&1)));
+                  px = (((p&8)>>>3)^((p&4)>>>2)^((p&2)>>>1^(p&1)));
+                  cx = (((c&8)>>>3)^((c&4)>>>2)^((c&2)>>>1^(c&1)));
+                    if( (px==cx)) {
+                        counter++;
+                    }
+                    gesamt++;
+//                System.out.println(kx +" "+px+" "+cx);
+            }
+  //      }
+        System.out.println(((double)counter/(double)gesamt));
+    }
+
+    
+    
+    
+    
+    public static void main(String[] args) {
+        //differentialAnalysis(true);
+        linearAnalysis();
+        
 
     }
 }

@@ -98,7 +98,8 @@ public class LoadData {
 
     public static void main(String[] args)
     {
-        LinkedList<byte[]> list = loadDataInByteArray("stud.jpg", 512, 4);
+        LinkedList<byte[]> list = loadDataInByteArray("test.txt", 512, 4);
+
         writeData("stud2.jpg", list);
     }
 }

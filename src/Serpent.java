@@ -1,3 +1,10 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
 /**
  * Serpent Implementierung mit Table-LookUp
  * 
@@ -673,31 +680,16 @@ public class Serpent {
         int[] enc = encrypt(value, keyBS);
         int[] dec = decrypt(enc, keyBS);
 
-        // int[] enc2 = encrypt(value2, keyBS2);
-        // int[] dec2 = decryptBitSlice(enc2, keyBS2);
-
-//        for (int i : enc) {
-//            System.out.print(i + " ");
-//        }
-//        System.out.println();
-//
-//        for (int i : dec) {
-//            System.out.print(i + " ");
-//        }
-        // System.out.println();
-        // for (int i : enc2) {
-        // System.out.print(i + " ");
+        long t1 = System.currentTimeMillis();
+        // for (int i = 0; i < 3200000; i++) {
+        // decrypt(encrypt(value, keyBS), keyBS);
+        // encrypt(value, key);
+        // decryptBitSlice(encryptBitSlice(value, keyBS), keyBS);
+        // System.out.println(enc[0] + " " + enc[1] + " " + enc[2] + " " +
+        // enc[3]);
         // }
 
-        long t1 = System.currentTimeMillis();
-         for (int i = 0; i < 3200000; i++) {
-         decrypt(encrypt(value, keyBS), keyBS);
-//         encrypt(value, key);
-//         decryptBitSlice(encryptBitSlice(value, keyBS), keyBS);
-//         System.out.println(enc[0] + " " + enc[1] + " " + enc[2] + " " +
-//         enc[3]);
-         }
         long t2 = System.currentTimeMillis();
-         System.out.println((t2 - t1) / 1000);
+        // System.out.println((t2 - t1) / 1000);
     }
 }
