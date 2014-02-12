@@ -161,13 +161,16 @@ public class Analyse {
         int sboxX;
         for (int x = 0; x < 16; x++) {
             sboxX = SerpentTables.Sbox[sbox][x];
-            if (verbose)
-                System.out.print(sboxX + "\t");
+            if (verbose) {
+                System.out.print(print4Bits(x) + "\t");
+                System.out.print(print4Bits(sboxX) + "\t");
+            }
             for (int s = 0; s < 4; s++) {
                 if (s == 0)
                     alphaXor = getBit(s, x) & getBit(s, alpha);
                 else
                     alphaXor ^= getBit(s, x) & getBit(s, alpha);
+
             }
             for (int t = 0; t < 4; t++) {
                 if (t == 0)
@@ -177,10 +180,16 @@ public class Analyse {
             }
             if (verbose) {
                 System.out.print(alphaXor + "\t");
-                System.out.println(betaXor);
+                System.out.print(betaXor + "\t");
             }
             if (alphaXor == betaXor)
                 count++;
+            if (verbose) {
+                if (alphaXor == betaXor)
+                    System.out.println("j");
+                else
+                    System.out.println("n");
+            }
         }
         return count;
     }
@@ -207,6 +216,13 @@ public class Analyse {
         System.out.println(((double) counter / (double) gesamt));
     }
 
+    public static String print4Bits(int value) {
+        String s = "";
+        for (int i = 3; i > -1; i--)
+            s += getBit(i, value);
+        return s;
+    }
+
     public static int getBit(int pos, int value) {
         int offset = 1 << (pos); // little Endian
         if ((value & offset) != 0)
@@ -215,15 +231,59 @@ public class Analyse {
             return 0;
     }
 
+    public static boolean oneBitToOneBit(int alpha, int beta) {
+        switch (alpha) {
+            case 1:
+                if (beta == 1 || beta == 2 || beta == 4 || beta == 8) {
+                    return true;
+                }
+                break;
+            case 2:
+                if (beta == 1 || beta == 2 || beta == 4 || beta == 8) {
+                    return true;
+                }
+                break;
+            case 4:
+                if (beta == 1 || beta == 2 || beta == 4 || beta == 8) {
+                    return true;
+                }
+                break;
+            case 8:
+                if (beta == 1 || beta == 2 || beta == 4 || beta == 8) {
+                    return true;
+                }
+                break;
+            default:
+                return false;
+        }
+        return false;
+    }
+
     public static void main(String[] args) {
+
         // differentialAnalysis(true);
         // linearAnalysis();
-        // System.out.println("SOut\talpha\tbeta");
+        // System.out.println("SIn\tSOut\talpha\tbeta\talpha=?beta");
+        // System.out.println(1000 + "\t" + 1111 + "\t" + NMatches(0, 8, 15,
+        // true));
         // System.out.println(NMatches(0, 4, 15,false));
-        for (int beta = 0; beta < 16; beta++) {
-            for (int alpha = 0; alpha < 16; alpha++) {
-                System.out.println(beta + "\t" + alpha + "\t" + NMatches(0, alpha, beta, false));
+        for (int sbox = 0; sbox < 8; sbox++) {
+
+            System.out.println("SBOX" + sbox);
+
+            for (int beta = 0; beta < 16; beta++) {
+                for (int alpha = 0; alpha < 16; alpha++) {
+                    if (alpha == 15 || alpha == 7) {
+                        System.out.println(alpha + "&" + beta + "&" + NMatches(sbox, alpha, beta, false) + "\\\\");
+                        System.out.println("\\hline");
+                    } else if (oneBitToOneBit(alpha, beta))
+                        System.out.print("\\textcolor{red}{" + alpha + "}" + "&" + "\\textcolor{red}{" + beta + "}" + "&" + "\\textcolor{red}{"
+                                + NMatches(sbox, alpha, beta, false) + "}" + "&");
+                    else
+                        System.out.print(alpha + "&" + beta + "&" + NMatches(sbox, alpha, beta, false) + "&");
+                }
             }
+            System.out.println("\n\n\n");
         }
     }
 }
