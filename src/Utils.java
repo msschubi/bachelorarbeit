@@ -91,6 +91,8 @@ public class Utils {
         else
             return 0;
     }
+    
+    
 
     // TODO TEST
     public static int getBitTEST(int pos, int value) {
