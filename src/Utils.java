@@ -35,7 +35,7 @@ public class Utils {
      * @param offset # Stellen die ausgegeben werden sollen
      */
     public static void printBinary(int decimalValue, int offset) {
-        for (int i = 32-offset; i <= 31; i++) {
+        for (int i = 32 - offset; i <= 31; i++) {
             System.out.printf("%-4d", getBit(i, decimalValue));
         }
     }
@@ -91,8 +91,6 @@ public class Utils {
         else
             return 0;
     }
-    
-    
 
     // TODO TEST
     public static int getBitTEST(int pos, int value) {
@@ -182,5 +180,45 @@ public class Utils {
             e.printStackTrace();
         }
         return hash;
+    }
+
+    /*
+     * Optimierte mutliplikation im GF(2^8)
+     * 
+     * @param p Polynom p
+     * 
+     * @param q Polynom q
+     * 
+     * @result multiplikation der Polynome p,q in GF(2^8)
+     */
+    public static int multGF(int p, int q) {
+        int result = 0;
+        int modifQ = q;
+
+        for (int i = 0; i < 8; i++) { // ueber alle bits
+            if ((p & 1) == 1) { // 0te Bit gesetzt?
+                result ^= modifQ;
+            }
+            modifQ = xTime(modifQ);
+            p = p >> 1;
+        }
+        return result;
+    }
+
+    /*
+     * Operation xtime
+     * 
+     * @param q Polynom q = a_7*x+a_6*x+...+a_0*x
+     * 
+     * @result q * x = q * 2 in GF(2^8)
+     */
+    public static int xTime(int q) {
+        if ((q & 128) == 128) { // Bit 8 gesetzt?
+            q = q << 1;
+            q ^= TwofishTables.IRRPOLYNOM;
+        } else {
+            q = q << 1;
+        }
+        return q;
     }
 }
