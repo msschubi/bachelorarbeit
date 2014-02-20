@@ -2,26 +2,52 @@ public class TwofishTables {
     /**
      * irreduzible Polynome in GF(2^8)
      */
-    final static int IRRPOLYNOM = 283; // AES
-    final static int IRRPOLYNOM2 = 361; // Twofish
-    final static int[][] MDS = { { 1, 239, 91, 91 }, { 91, 239, 239, 1 }, { 239, 91, 1, 239 }, { 239, 1, 239, 91 } };
+    final static int IRRPOLYNOMAES = 283; // AES
+    final static int IRRPOLYNOMTFG = 361; // Twofish g-Funktion
+    final static int IRRPOLYNOMTFKEY = 333; // Twofish key-generierung
+    final static int[][] MDS = {
+            { 0x1, 0xEF, 0x5B, 0x5B },
+            { 0x5B, 0xEF, 0xEF, 0x1 },
+            { 0xEF, 0x5B, 0x1, 0xEF },
+            { 0xEF, 0x1, 0xEF, 0x5B } };
+    final static int[][] RS = {
+            { 0x01, 0xA4, 0x55, 0x87, 0x5A, 0x58, 0xDB, 0x9E },
+            { 0xA4, 0x56, 0x82, 0xF3, 0x1E, 0xC6, 0x68, 0x5E },
+            { 0x02, 0xA1, 0xFC, 0xC1, 0x47, 0xAE, 0x3D, 0x19 },
+            { 0xA4, 0x55, 0x87, 0x5A, 0x58, 0xDB, 0x9E, 0x03 } };
+    final static int[][] sBoxQ0 = {
+            { 0x8, 0x1, 0x7, 0xD, 0x6, 0xF, 0x3, 0x2, 0x0, 0xB, 0x5, 0x9, 0xE, 0xC, 0xA, 0x4 },
+            { 0xE, 0xC, 0xB, 0x8, 0x1, 0x2, 0x3, 0x5, 0xF, 0x4, 0xA, 0x6, 0x7, 0x0, 0x9, 0xD },
+            { 0xB, 0xA, 0x5, 0xE, 0x6, 0xD, 0x9, 0x0, 0xC, 0x8, 0xF, 0x3, 0x2, 0x4, 0x7, 0x1 },
+            { 0xD, 0x7, 0xF, 0x4, 0x1, 0x2, 0x6, 0xE, 0x9, 0xB, 0x3, 0x0, 0x8, 0x5, 0xC, 0xA } };
+    final static int[][] sBoxQ1 = {
+            { 0x2, 0x8, 0xB, 0xD, 0xF, 0x7, 0x6, 0xE, 0x3, 0x1, 0x9, 0x4, 0x0, 0xA, 0xC, 0x5 },
+            { 0x1, 0xE, 0x2, 0xB, 0x4, 0xC, 0x3, 0x7, 0x6, 0xD, 0xA, 0x5, 0xF, 0x9, 0x0, 0x8 },
+            { 0x4, 0xC, 0x7, 0x5, 0x1, 0x6, 0x9, 0xA, 0x0, 0xE, 0xd, 0x8, 0x2, 0xB, 0x3, 0xF },
+            { 0xB, 0x9, 0x5, 0x1, 0xC, 0x3, 0xD, 0xE, 0x6, 0x4, 0x7, 0xF, 0x2, 0x0, 0x8, 0xA } };
 
     public static void main(String[] args) {
         int y0 = 16;
         int y1 = 32;
         int y2 = 64;
         int y3 = 64;
-        
-        //MDS
-        int z0 = Utils.multGF(y0, MDS[0][0]) ^ Utils.multGF(y0, MDS[0][1]) ^ Utils.multGF(y0, MDS[0][2]) ^ Utils.multGF(y0, MDS[0][3]);
-        int z1 = Utils.multGF(y1, MDS[1][0]) ^ Utils.multGF(y1, MDS[1][1]) ^ Utils.multGF(y1, MDS[1][2]) ^ Utils.multGF(y1, MDS[1][3]);
-        int z2 = Utils.multGF(y2, MDS[2][0]) ^ Utils.multGF(y2, MDS[2][1]) ^ Utils.multGF(y2, MDS[2][2]) ^ Utils.multGF(y2, MDS[2][3]);
-        int z3 = Utils.multGF(y3, MDS[3][0]) ^ Utils.multGF(y3, MDS[3][1]) ^ Utils.multGF(y3, MDS[3][2]) ^ Utils.multGF(y3, MDS[3][3]);
-        
-        
-        
+
+        // MDS
+        int z0 = Utils.multGF(y0, MDS[0][0], IRRPOLYNOMTFG) ^ Utils.multGF(y0, MDS[0][1], IRRPOLYNOMTFG)
+                ^ Utils.multGF(y0, MDS[0][2], IRRPOLYNOMTFG)
+                ^ Utils.multGF(y0, MDS[0][3], IRRPOLYNOMTFG);
+        int z1 = Utils.multGF(y1, MDS[1][0], IRRPOLYNOMTFG) ^ Utils.multGF(y1, MDS[1][1], IRRPOLYNOMTFG)
+                ^ Utils.multGF(y1, MDS[1][2], IRRPOLYNOMTFG)
+                ^ Utils.multGF(y1, MDS[1][3], IRRPOLYNOMTFG);
+        int z2 = Utils.multGF(y2, MDS[2][0], IRRPOLYNOMTFG) ^ Utils.multGF(y2, MDS[2][1], IRRPOLYNOMTFG)
+                ^ Utils.multGF(y2, MDS[2][2], IRRPOLYNOMTFG)
+                ^ Utils.multGF(y2, MDS[2][3], IRRPOLYNOMTFG);
+        int z3 = Utils.multGF(y3, MDS[3][0], IRRPOLYNOMTFG) ^ Utils.multGF(y3, MDS[3][1], IRRPOLYNOMTFG)
+                ^ Utils.multGF(y3, MDS[3][2], IRRPOLYNOMTFG)
+                ^ Utils.multGF(y3, MDS[3][3], IRRPOLYNOMTFG);
+
         System.out.println(z0 + " " + z1 + " " + z2 + " " + z3);
-        System.out.println((1077944336/(256*256*256)) % 256);
+        System.out.println(RS[1][1]);
 
     }
 }

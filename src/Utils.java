@@ -191,7 +191,7 @@ public class Utils {
      * 
      * @result multiplikation der Polynome p,q in GF(2^8)
      */
-    public static int multGF(int p, int q) {
+    public static int multGF(int p, int q, int irrpolynom) {
         int result = 0;
         int modifQ = q;
 
@@ -199,7 +199,7 @@ public class Utils {
             if ((p & 1) == 1) { // 0te Bit gesetzt?
                 result ^= modifQ;
             }
-            modifQ = xTime(modifQ);
+            modifQ = xTime(modifQ, irrpolynom);
             p = p >> 1;
         }
         return result;
@@ -212,10 +212,10 @@ public class Utils {
      * 
      * @result q * x = q * 2 in GF(2^8)
      */
-    public static int xTime(int q) {
+    public static int xTime(int q, int irrpolynom) {
         if ((q & 128) == 128) { // Bit 8 gesetzt?
             q = q << 1;
-            q ^= TwofishTables.IRRPOLYNOM;
+            q ^= irrpolynom;
         } else {
             q = q << 1;
         }

@@ -6,10 +6,10 @@
 public class Analyse {
     static int[][] s0, s1, s2, s3, s4, s5, s6, s7;
 
-    private static void diff(int x1, int x2) {
-        Utils.printBinary(x1 ^ x2, 4);
-    }
-
+    /*
+     * private static void diff(int x1, int x2) { Utils.printBinary(x1 ^ x2, 4);
+     * }
+     */
     public static void differentialAnalysis(boolean latex) {
         s0 = new int[16][16];
         s1 = new int[16][16];
