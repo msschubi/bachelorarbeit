@@ -4,11 +4,64 @@ public class Twofish {
     private static int[] Me;
     private static int[] Mo;
     private static int[] S;
+    private static int k;
 
     // q0, q1 Variablen
     private static int a0, a1, a2, a3, a4, b0, b1, b2, b3, b4;
 
-    public static byte q0(byte x) {
+    // h Variablen
+    private static int y0, y1, y2, y3;
+    private static int[] z = { 0, 0, 0, 0 };
+
+    public static int g(int X) {
+        return h(X, S);
+    }
+
+    public static int h(int X, int[] L) {
+        y0 = X & 0xF;
+        y1 = (X >>> 8) & 0xF;
+        y2 = (X >>> 16) & 0xF;
+        y3 = (X >>> 24) & 0xF;
+
+        if (k == 4) {
+            y0 = q1(y0) ^ (L[3] & 0xF);
+            y1 = q0(y1) ^ ((L[3] >>> 8) & 0xF);
+            y2 = q0(y2) ^ ((L[3] >>> 16) & 0xF);
+            y3 = q1(y3) ^ ((L[3] >>> 24) & 0xF);
+        }
+        if (k >= 3) {
+            y0 = q1(y0) ^ (L[2] & 0xF);
+            y1 = q1(y1) ^ ((L[2] >>> 8) & 0xF);
+            y2 = q0(y2) ^ ((L[2] >>> 16) & 0xF);
+            y3 = q0(y3) ^ ((L[2] >>> 24) & 0xF);
+        }
+
+        y0 = q1(q0(q0(y0) ^ (L[1] & 0xF)) ^ (L[0] & 0xF));
+        y1 = q0(q0(q1(y1) ^ ((L[1] >>> 8) & 0xF)) ^ ((L[0] >>> 8) & 0xF));
+        y2 = q1(q1(q0(y2) ^ ((L[1] >>> 16) & 0xF)) ^ ((L[0] >>> 16) & 0xF));
+        y3 = q0(q1(q1(y3) ^ ((L[1] >>> 24) & 0xF)) ^ ((L[0] >>> 24) & 0xF));
+
+        z[0] = Utils.multGF(TwofishTables.MDS[0][0], y0, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[0][1], y1, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[0][2], y2, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[0][3], y3, TwofishTables.IRRPOLYNOMTFMDS);
+        z[1] = Utils.multGF(TwofishTables.MDS[1][0], y0, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[1][1], y1, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[1][2], y2, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[1][3], y3, TwofishTables.IRRPOLYNOMTFMDS);
+        z[2] = Utils.multGF(TwofishTables.MDS[2][0], y0, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[2][1], y1, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[2][2], y2, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[2][3], y3, TwofishTables.IRRPOLYNOMTFMDS);
+        z[3] = Utils.multGF(TwofishTables.MDS[3][0], y0, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[3][1], y1, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[3][2], y2, TwofishTables.IRRPOLYNOMTFMDS) ^
+                Utils.multGF(TwofishTables.MDS[3][3], y3, TwofishTables.IRRPOLYNOMTFMDS);
+
+        return (z[3] << 24) | (z[2] << 16) | (z[1] << 8) | z[0];
+    }
+
+    public static int q0(int x) {
         a0 = x / 16;
         b0 = x % 16;
         a1 = a0 ^ b0;
@@ -21,10 +74,10 @@ public class Twofish {
         a4 = TwofishTables.sBoxQ0[2][a3];
         b4 = TwofishTables.sBoxQ0[3][b3];
 
-        return (byte) (16 * b4 + a4);
+        return 16 * b4 + a4;
     }
 
-    public static byte q1(byte x) {
+    public static int q1(int x) {
         a0 = x / 16;
         b0 = x % 16;
         a1 = a0 ^ b0;
@@ -37,7 +90,7 @@ public class Twofish {
         a4 = TwofishTables.sBoxQ1[2][a3];
         b4 = TwofishTables.sBoxQ1[3][b3];
 
-        return (byte) (16 * b4 + a4);
+        return 16 * b4 + a4;
     }
 
     public static int[] paddingKey(int[] M) {
@@ -56,7 +109,7 @@ public class Twofish {
     }
 
     public static void calcBasisKey(int[] M) {
-        int k = M.length / 2;
+        k = M.length / 2;
         Me = new int[k];
         Mo = new int[k];
         S = new int[k];
@@ -141,7 +194,9 @@ public class Twofish {
         int M[] = { 1, 2, 3, 4, 1, 2, 3, 4 };
         calcBasisKey(paddingKey(M));
 
-        b0 = 10;
-        System.out.println((((b0 << 1) & 0xF) | (b0 >> 3)));
+        int a = 233822232;
+        int b;
+
+        System.out.println(h(a, S));
     }
 }

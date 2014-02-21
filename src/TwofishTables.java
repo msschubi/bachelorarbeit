@@ -3,7 +3,7 @@ public class TwofishTables {
      * irreduzible Polynome in GF(2^8)
      */
     final static int IRRPOLYNOMAES = 283; // AES
-    final static int IRRPOLYNOMTFG = 361; // Twofish g-Funktion
+    final static int IRRPOLYNOMTFMDS = 361; // Twofish g-Funktion
     final static int IRRPOLYNOMTFKEY = 333; // Twofish key-generierung
     final static int[][] MDS = {
             { 0x1, 0xEF, 0x5B, 0x5B },
@@ -33,18 +33,18 @@ public class TwofishTables {
         int y3 = 64;
 
         // MDS
-        int z0 = Utils.multGF(y0, MDS[0][0], IRRPOLYNOMTFG) ^ Utils.multGF(y0, MDS[0][1], IRRPOLYNOMTFG)
-                ^ Utils.multGF(y0, MDS[0][2], IRRPOLYNOMTFG)
-                ^ Utils.multGF(y0, MDS[0][3], IRRPOLYNOMTFG);
-        int z1 = Utils.multGF(y1, MDS[1][0], IRRPOLYNOMTFG) ^ Utils.multGF(y1, MDS[1][1], IRRPOLYNOMTFG)
-                ^ Utils.multGF(y1, MDS[1][2], IRRPOLYNOMTFG)
-                ^ Utils.multGF(y1, MDS[1][3], IRRPOLYNOMTFG);
-        int z2 = Utils.multGF(y2, MDS[2][0], IRRPOLYNOMTFG) ^ Utils.multGF(y2, MDS[2][1], IRRPOLYNOMTFG)
-                ^ Utils.multGF(y2, MDS[2][2], IRRPOLYNOMTFG)
-                ^ Utils.multGF(y2, MDS[2][3], IRRPOLYNOMTFG);
-        int z3 = Utils.multGF(y3, MDS[3][0], IRRPOLYNOMTFG) ^ Utils.multGF(y3, MDS[3][1], IRRPOLYNOMTFG)
-                ^ Utils.multGF(y3, MDS[3][2], IRRPOLYNOMTFG)
-                ^ Utils.multGF(y3, MDS[3][3], IRRPOLYNOMTFG);
+        int z0 = Utils.multGF(y0, MDS[0][0], IRRPOLYNOMTFMDS) ^ Utils.multGF(y0, MDS[0][1], IRRPOLYNOMTFMDS)
+                ^ Utils.multGF(y0, MDS[0][2], IRRPOLYNOMTFMDS)
+                ^ Utils.multGF(y0, MDS[0][3], IRRPOLYNOMTFMDS);
+        int z1 = Utils.multGF(y1, MDS[1][0], IRRPOLYNOMTFMDS) ^ Utils.multGF(y1, MDS[1][1], IRRPOLYNOMTFMDS)
+                ^ Utils.multGF(y1, MDS[1][2], IRRPOLYNOMTFMDS)
+                ^ Utils.multGF(y1, MDS[1][3], IRRPOLYNOMTFMDS);
+        int z2 = Utils.multGF(y2, MDS[2][0], IRRPOLYNOMTFMDS) ^ Utils.multGF(y2, MDS[2][1], IRRPOLYNOMTFMDS)
+                ^ Utils.multGF(y2, MDS[2][2], IRRPOLYNOMTFMDS)
+                ^ Utils.multGF(y2, MDS[2][3], IRRPOLYNOMTFMDS);
+        int z3 = Utils.multGF(y3, MDS[3][0], IRRPOLYNOMTFMDS) ^ Utils.multGF(y3, MDS[3][1], IRRPOLYNOMTFMDS)
+                ^ Utils.multGF(y3, MDS[3][2], IRRPOLYNOMTFMDS)
+                ^ Utils.multGF(y3, MDS[3][3], IRRPOLYNOMTFMDS);
 
         System.out.println(z0 + " " + z1 + " " + z2 + " " + z3);
         System.out.println(RS[1][1]);
