@@ -431,10 +431,6 @@ public final class Twofish_Algorithm // implicit no-argument constructor
                     (k[offset++] & 0xFF) << 24;
             sBoxKey[j] = RS_MDS_Encode(k32e[i], k32o[i]); // reverse order
         }
-        // TODO BIS HIER HIN ALLES OKAY
-        // for(int a:sBoxKey) {
-        // System.out.println(a);
-        // }
 
         // compute the round decryption subkeys for PHT. these same subkeys
         // will be used in encryption but will be applied in reverse order.
@@ -450,9 +446,6 @@ public final class Twofish_Algorithm // implicit no-argument constructor
             subKeys[2 * i + 1] = A << SK_ROTL | A >>> (32 - SK_ROTL);
         }
 
-        // for(int x:subKeys) {
-        // System.out.println(x);
-        // }
         //
         // fully expand the table for speed
         //
@@ -570,11 +563,13 @@ public final class Twofish_Algorithm // implicit no-argument constructor
                 (in[inOffset++] & 0xFF) << 8 |
                 (in[inOffset++] & 0xFF) << 16 |
                 (in[inOffset++] & 0xFF) << 24;
+        
 
         x0 ^= sKey[INPUT_WHITEN];
         x1 ^= sKey[INPUT_WHITEN + 1];
         x2 ^= sKey[INPUT_WHITEN + 2];
         x3 ^= sKey[INPUT_WHITEN + 3];
+        
         if (DEBUG && debuglevel > 6)
             System.out
                     .println("PTw=" + intToString(x0) + intToString(x1) + intToString(x2) + intToString(x3));
@@ -588,6 +583,7 @@ public final class Twofish_Algorithm // implicit no-argument constructor
             x2 = x2 >>> 1 | x2 << 31;
             x3 = x3 << 1 | x3 >>> 31;
             x3 ^= t0 + 2 * t1 + sKey[k++];
+            
             if (DEBUG && debuglevel > 6)
                 System.out.println("CT" + (R) + "=" + intToString(x0) + intToString(x1) + intToString(x2)
                         + intToString(x3));
@@ -602,10 +598,12 @@ public final class Twofish_Algorithm // implicit no-argument constructor
                 System.out.println("CT" + (R + 1) + "=" + intToString(x0) + intToString(x1) + intToString(x2)
                         + intToString(x3));
         }
+        
         x2 ^= sKey[OUTPUT_WHITEN];
         x3 ^= sKey[OUTPUT_WHITEN + 1];
         x0 ^= sKey[OUTPUT_WHITEN + 2];
         x1 ^= sKey[OUTPUT_WHITEN + 3];
+
         if (DEBUG && debuglevel > 6)
             System.out
                     .println("CTw=" + intToString(x0) + intToString(x1) + intToString(x2) + intToString(x3));
@@ -634,6 +632,7 @@ public final class Twofish_Algorithm // implicit no-argument constructor
      * @param sessionKey The session key to use for decryption.
      * @return The plaintext generated from a ciphertext using the session key.
      */
+    //TODO
     public static byte[]
             blockDecrypt(byte[] in, int inOffset, Object sessionKey) {
         if (DEBUG)
@@ -661,6 +660,7 @@ public final class Twofish_Algorithm // implicit no-argument constructor
                 (in[inOffset++] & 0xFF) << 8 |
                 (in[inOffset++] & 0xFF) << 16 |
                 (in[inOffset++] & 0xFF) << 24;
+        
 
         x2 ^= sKey[OUTPUT_WHITEN];
         x3 ^= sKey[OUTPUT_WHITEN + 1];
@@ -689,6 +689,8 @@ public final class Twofish_Algorithm // implicit no-argument constructor
             x3 = x3 >>> 1 | x3 << 31;
             x2 = x2 << 1 | x2 >>> 31;
             x2 ^= t0 + t1 + sKey[k--];
+            
+            
             if (DEBUG && debuglevel > 6)
                 System.out.println("PT" + (ROUNDS - R - 1) + "=" + intToString(x2) + intToString(x3)
                         + intToString(x0) + intToString(x1));
@@ -773,7 +775,6 @@ public final class Twofish_Algorithm // implicit no-argument constructor
         return result;
     }
 
-    // TODO
     private static final int F32(int k64Cnt, int x, int[] k32) {
         int b0 = b0(x);
         int b1 = b1(x);
@@ -807,7 +808,6 @@ public final class Twofish_Algorithm // implicit no-argument constructor
                 b3 = (P[P_33][b3] & 0xFF) ^ b3(k2);
                 // System.out.println(b0+" "+b1+" "+b2+" "+b3);
             case 2: // 128-bit keys (optimize for this case)
-                // TODO hier stehengeblieben
                 result =
                         MDS[0][(P[P_01][(P[P_02][b0] & 0xFF) ^ b0(k1)] & 0xFF) ^ b0(k0)] ^
                                 MDS[1][(P[P_11][(P[P_12][b1] & 0xFF) ^ b1(k1)] & 0xFF) ^ b1(k0)] ^
@@ -950,19 +950,31 @@ public final class Twofish_Algorithm // implicit no-argument constructor
     // ...........................................................................
 
     public static void main(String[] args) {
-        // self_test(16);
+         //self_test(16);
         // self_test(24);
         // self_test(32);
         byte[] k = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0 };
         try {
-            Object[] K = (Object[]) makeKey(k);
-            int[] key = (int[]) K[1];
-            for (int i : key) {
-                System.out.println(i);
+            byte[] in = {1,0,0,12,0,0,0,0,0,0,0,1,0,0,0,2};
+            blockEncrypt(in, 0, makeKey(k));
+            Object key = makeKey(k);
+            
+            long t1 = System.currentTimeMillis();
+            for (int i=0; i<0x06FFF1; i++) {
+                blockDecrypt(blockEncrypt(in, 0, key), 0, key);
             }
+            long t2 = System.currentTimeMillis();
+            System.out.println(t2-t1);
+//            Object[] K = (Object[]) makeKey(k);
+//            int[] key = (int[]) K[1];
+//            for (int i : key) {
+//                System.out.println(i);
+//            }
         } catch (Exception e) {
         }
+        
+        
 
         // for(int i: )
 

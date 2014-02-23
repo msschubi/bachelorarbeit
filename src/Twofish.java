@@ -9,28 +9,164 @@ public class Twofish {
     private final static int p = 0x1010101; // 2^24+2^16+2^8+2^0
     private static int[] K = new int[40];
 
-    // q0, q1 Variablen
-    private static int a0, a1, a2, a3, a4, b0, b1, b2, b3, b4;
-
     // h Variablen
     private static int y0, y1, y2, y3;
     private static int[] z = { 0, 0, 0, 0 };
 
+    // encrypt+decrypt Variablen
+    private static int x0, x1, x2, x3;
+    private static int t0, t1;
+    private static int[] cipher = new int[4];
+    private static int[] plain = new int[4];
+
+    public static int[] encrypt(int[] P) {
+        // Aufteilung in 4 Woerter Umwandlung in Little Endian Konvention
+        // mit 8 Bit Wörtern.
+        x0 = (P[0] & 0xFF) << 24;
+        x0 |= (P[0] & (0xFF << 8)) << 8;
+        x0 |= (P[0] & (0xFF << 16)) >>> 8;
+        x0 |= (P[0] & (0xFF << 24)) >>> 24;
+
+        x1 = (P[1] & 0xFF) << 24;
+        x1 |= (P[1] & (0xFF << 8)) << 8;
+        x1 |= (P[1] & (0xFF << 16)) >>> 8;
+        x1 |= (P[1] & (0xFF << 24)) >>> 24;
+
+        x2 = (P[2] & 0xFF) << 24;
+        x2 |= (P[2] & (0xFF << 8)) << 8;
+        x2 |= (P[2] & (0xFF << 16)) >>> 8;
+        x2 |= (P[2] & (0xFF << 24)) >>> 24;
+
+        x3 = (P[3] & 0xFF) << 24;
+        x3 |= (P[3] & (0xFF << 8)) << 8;
+        x3 |= (P[3] & (0xFF << 16)) >>> 8;
+        x3 |= (P[3] & (0xFF << 24)) >>> 24;
+
+        // Input Whitening
+        x0 ^= K[0];
+        x1 ^= K[1];
+        x2 ^= K[2];
+        x3 ^= K[3];
+
+        // Durchgang mit jeweils einem Zyklus pro Schleife
+        // Funktion F wird in Rundenfunktion integriert, spart Operationen
+        for (int r = 0; r < 16; r += 2) {
+            t0 = g(x0);
+            t1 = g(((x1 << 8) | (x1 >>> 24)));
+            x2 ^= (t0 + t1 + K[2 * r + 8]); // Funktion F
+            x2 = (x2 >>> 1) | (x2 << 31);
+            x3 = (x3 << 1) | (x3 >>> 31);
+            x3 ^= t0 + 2 * t1 + K[2 * r + 9]; // Funktion F angewendet
+
+            // Tauschen und 2te Runde (fuer Zyklus)
+            t0 = g(x2);
+            t1 = g((x3 << 8) | (x3 >>> 24));
+            x0 ^= t0 + t1 + K[2 * r + 10]; // F
+            x0 = (x0 >>> 1) | (x0 << 31);
+            x1 = (x1 << 1) | (x1 >>> 31);
+            x1 ^= t0 + 2 * t1 + K[2 * r + 11]; // F
+        }
+
+        // Output Whitening + letzte Runde tauschen
+        x0 ^= K[6];
+        x1 ^= K[7];
+        x2 ^= K[4];
+        x3 ^= K[5];
+        cipher[0] = x2;
+        cipher[1] = x3;
+        cipher[2] = x0;
+        cipher[3] = x1;
+
+        // little Endian
+        cipher[0] = ((x2 & 0xFF) << 24) | (x2 & (0xFF << 8)) << 8 | (x2 & (0xFF << 16)) >>> 8
+                | (x2 & (0xFF << 24)) >>> 24;
+        cipher[1] = ((x3 & 0xFF) << 24) | (x3 & (0xFF << 8)) << 8 | (x3 & (0xFF << 16)) >>> 8
+                | (x3 & (0xFF << 24)) >>> 24;
+        cipher[2] = ((x0 & 0xFF) << 24) | (x0 & (0xFF << 8)) << 8 | (x0 & (0xFF << 16)) >>> 8
+                | (x0 & (0xFF << 24)) >>> 24;
+        cipher[3] = ((x1 & 0xFF) << 24) | (x1 & (0xFF << 8)) << 8 | (x1 & (0xFF << 16)) >>> 8
+                | (x1 & (0xFF << 24)) >>> 24;
+
+        return cipher;
+    }
+
+    public static int[] decrypt(int[] C) {
+
+        // little Endian + Eingang tauschen
+        x0 = (C[2] & 0xFF) << 24;
+        x0 |= (C[2] & (0xFF << 8)) << 8;
+        x0 |= (C[2] & (0xFF << 16)) >>> 8;
+        x0 |= (C[2] & (0xFF << 24)) >>> 24;
+
+        x1 = (C[3] & 0xFF) << 24;
+        x1 |= (C[3] & (0xFF << 8)) << 8;
+        x1 |= (C[3] & (0xFF << 16)) >>> 8;
+        x1 |= (C[3] & (0xFF << 24)) >>> 24;
+
+        x2 = (C[0] & 0xFF) << 24;
+        x2 |= (C[0] & (0xFF << 8)) << 8;
+        x2 |= (C[0] & (0xFF << 16)) >>> 8;
+        x2 |= (C[0] & (0xFF << 24)) >>> 24;
+
+        x3 = (C[1] & 0xFF) << 24;
+        x3 |= (C[1] & (0xFF << 8)) << 8;
+        x3 |= (C[1] & (0xFF << 16)) >>> 8;
+        x3 |= (C[1] & (0xFF << 24)) >>> 24;
+
+        // Input Whitening (bzw. Output Whitening rueckaengig)
+        x0 ^= K[6];
+        x1 ^= K[7];
+        x2 ^= K[4];
+        x3 ^= K[5];
+
+        for (int r = 14; r >= 0; r -= 2) {
+            t0 = g(x2);
+            t1 = g((x3 << 8) | (x3 >>> 24));
+            x0 = (x0 << 1) | (x0 >>> 31);
+            x0 ^= t0 + t1 + K[2 * r + 10];
+            x1 ^= t0 + 2 * t1 + K[2 * r + 11];
+            x1 = (x1 >>> 1) | (x1 << 31);
+
+            t0 = g(x0);
+            t1 = g((x1 << 8) | (x1 >>> 24));
+            x2 = (x2 << 1) | (x2 >>> 31);
+            x2 ^= t0 + t1 + K[2 * r + 8];
+            x3 ^= t0 + 2 * t1 + K[2 * r + 9];
+            x3 = (x3 >>> 1) | (x3 << 31);
+        }
+
+        // Input Whitening rueckgaengig machen
+        x0 ^= K[0];
+        x1 ^= K[1];
+        x2 ^= K[2];
+        x3 ^= K[3];
+
+        // little Endian
+        plain[0] = ((x0 & 0xFF) << 24) | (x0 & (0xFF << 8)) << 8 | (x0 & (0xFF << 16)) >>> 8
+                | (x0 & (0xFF << 24)) >>> 24;
+        plain[1] = ((x1 & 0xFF) << 24) | (x1 & (0xFF << 8)) << 8 | (x1 & (0xFF << 16)) >>> 8
+                | (x1 & (0xFF << 24)) >>> 24;
+        plain[2] = ((x2 & 0xFF) << 24) | (x2 & (0xFF << 8)) << 8 | (x2 & (0xFF << 16)) >>> 8
+                | (x2 & (0xFF << 24)) >>> 24;
+        plain[3] = ((x3 & 0xFF) << 24) | (x3 & (0xFF << 8)) << 8 | (x3 & (0xFF << 16)) >>> 8
+                | (x3 & (0xFF << 24)) >>> 24;
+
+        return plain;
+    }
+
+    // funktioniert
     public static void calcKey() {
         int A, B, temp;
         for (int i = 0; i < 20; i++) {
             A = h(2 * i * p, Me);
-//            System.out.println(A);
+            // System.out.println(A);
             B = h((2 * i + 1) * p, Mo);
             B = (B << 8) | (B >>> 24);
             // Pseudo-Hadamard Transformation
-            K[2 * i] = (int) ((A + B) % (0x100000000L)); // mod 2^32
-            temp = (int) ((A + 2 * B) % (0x100000000L));
+            K[2 * i] = A + B; // mod 2^32 durch ueberlauf
+            temp = A + 2 * B;
             K[2 * i + 1] = (temp << 9) | (temp >>> 23);
         }
-//        for(int a:K) {
-//            System.out.println(a);
-//        }
     }
 
     // public static int[] inputWhitening ()
@@ -38,13 +174,12 @@ public class Twofish {
         return h(X, S);
     }
 
+    // funktioniert
     public static int h(int X, int[] L) {
         y0 = X & 0xFF;
         y1 = (X >>> 8) & 0xFF;
         y2 = (X >>> 16) & 0xFF;
         y3 = (X >>> 24) & 0xFF;
-
-        // System.out.println(y0+" "+y1+" "+y2+" "+y3);
 
         if (k == 4) {
             y0 = TFT.Q[1][y0] ^ (L[3] & 0xFF);
@@ -57,9 +192,8 @@ public class Twofish {
             y1 = TFT.Q[1][y1] ^ ((L[2] >>> 8) & 0xFF);
             y2 = TFT.Q[0][y2] ^ ((L[2] >>> 16) & 0xFF);
             y3 = TFT.Q[0][y3] ^ ((L[2] >>> 24) & 0xFF);
-//            System.out.println(y0 + " " + y1 + " " + y2 + " " + y3);
         }
-        // TODO ersetzen durch Table
+
         y0 = TFT.Q[1][TFT.Q[0][TFT.Q[0][y0] ^ (L[1] & 0xFF)] ^ (L[0] & 0xFF)];
         y1 = TFT.Q[0][TFT.Q[0][TFT.Q[1][y1] ^ ((L[1] >>> 8) & 0xFF)] ^ ((L[0] >>> 8) & 0xFF)];
         y2 = TFT.Q[1][TFT.Q[1][TFT.Q[0][y2] ^ ((L[1] >>> 16) & 0xFF)] ^ ((L[0] >>> 16) & 0xFF)];
@@ -182,15 +316,20 @@ public class Twofish {
     }
 
     public static void main(String[] args) {
-        int p = 87;
-        int q = 19;
+
         int M[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
         calcBasisKey(paddingKey(M));
-
         calcKey();
+        int[] P = { 1677723228, 213131, 11111111, 131232 };
+        
+        long t1 = System.currentTimeMillis();
+        for (int i=0; i<0x06FFF1; i++) {
+            decrypt(encrypt(P));
+        }
+        long t2 = System.currentTimeMillis();
+        System.out.println(t2-t1);
+       
 
-         for (int k : K) {
-         System.out.println(k);
-         }
+   
     }
 }
