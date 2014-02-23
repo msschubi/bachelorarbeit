@@ -431,11 +431,11 @@ public final class Twofish_Algorithm // implicit no-argument constructor
                     (k[offset++] & 0xFF) << 24;
             sBoxKey[j] = RS_MDS_Encode(k32e[i], k32o[i]); // reverse order
         }
-        //TODO BIS HIER HIN ALLES OKAY
-//        for(int a:sBoxKey) {
-//            System.out.println(a);
-//        }
-     
+        // TODO BIS HIER HIN ALLES OKAY
+        // for(int a:sBoxKey) {
+        // System.out.println(a);
+        // }
+
         // compute the round decryption subkeys for PHT. these same subkeys
         // will be used in encryption but will be applied in reverse order.
         int q, A, B;
@@ -449,6 +449,10 @@ public final class Twofish_Algorithm // implicit no-argument constructor
             A += B;
             subKeys[2 * i + 1] = A << SK_ROTL | A >>> (32 - SK_ROTL);
         }
+
+        // for(int x:subKeys) {
+        // System.out.println(x);
+        // }
         //
         // fully expand the table for speed
         //
@@ -768,7 +772,8 @@ public final class Twofish_Algorithm // implicit no-argument constructor
         int result = (x << 8) ^ (g3 << 24) ^ (g2 << 16) ^ (g3 << 8) ^ b;
         return result;
     }
-    //TODO
+
+    // TODO
     private static final int F32(int k64Cnt, int x, int[] k32) {
         int b0 = b0(x);
         int b1 = b1(x);
@@ -778,18 +783,17 @@ public final class Twofish_Algorithm // implicit no-argument constructor
         int k1 = k32[1];
         int k2 = k32[2];
         int k3 = k32[3];
-        
-//        System.out.println(b0+" "+b1+" "+b2+" "+b3);
-        
+
+        // System.out.println(b0+" "+b1+" "+b2+" "+b3);
 
         int result = 0;
         switch (k64Cnt & 3) {
             case 1:
                 result =
                         MDS[0][(P[P_01][b0] & 0xFF) ^ b0(k0)] ^
-                        MDS[1][(P[P_11][b1] & 0xFF) ^ b1(k0)] ^
-                        MDS[2][(P[P_21][b2] & 0xFF) ^ b2(k0)] ^
-                        MDS[3][(P[P_31][b3] & 0xFF) ^ b3(k0)];
+                                MDS[1][(P[P_11][b1] & 0xFF) ^ b1(k0)] ^
+                                MDS[2][(P[P_21][b2] & 0xFF) ^ b2(k0)] ^
+                                MDS[3][(P[P_31][b3] & 0xFF) ^ b3(k0)];
                 break;
             case 0: // same as 4
                 b0 = (P[P_04][b0] & 0xFF) ^ b0(k3);
@@ -801,9 +805,9 @@ public final class Twofish_Algorithm // implicit no-argument constructor
                 b1 = (P[P_13][b1] & 0xFF) ^ b1(k2);
                 b2 = (P[P_23][b2] & 0xFF) ^ b2(k2);
                 b3 = (P[P_33][b3] & 0xFF) ^ b3(k2);
-                System.out.println(b0+" "+b1+" "+b2+" "+b3);
+                // System.out.println(b0+" "+b1+" "+b2+" "+b3);
             case 2: // 128-bit keys (optimize for this case)
-                //TODO hier stehengeblieben
+                // TODO hier stehengeblieben
                 result =
                         MDS[0][(P[P_01][(P[P_02][b0] & 0xFF) ^ b0(k1)] & 0xFF) ^ b0(k0)] ^
                                 MDS[1][(P[P_11][(P[P_12][b1] & 0xFF) ^ b1(k1)] & 0xFF) ^ b1(k0)] ^
@@ -949,11 +953,18 @@ public final class Twofish_Algorithm // implicit no-argument constructor
         // self_test(16);
         // self_test(24);
         // self_test(32);
-        byte[] k = { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
-                0, 0, 2 };
+        byte[] k = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0 };
         try {
-            makeKey(k);
+            Object[] K = (Object[]) makeKey(k);
+            int[] key = (int[]) K[1];
+            for (int i : key) {
+                System.out.println(i);
+            }
         } catch (Exception e) {
         }
+
+        // for(int i: )
+
     }
 }

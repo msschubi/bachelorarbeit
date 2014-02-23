@@ -17,9 +17,10 @@ public class Twofish {
     private static int[] z = { 0, 0, 0, 0 };
 
     public static void calcKey() {
-        int A, B,temp;
+        int A, B, temp;
         for (int i = 0; i < 20; i++) {
             A = h(2 * i * p, Me);
+//            System.out.println(A);
             B = h((2 * i + 1) * p, Mo);
             B = (B << 8) | (B >>> 24);
             // Pseudo-Hadamard Transformation
@@ -27,39 +28,42 @@ public class Twofish {
             temp = (int) ((A + 2 * B) % (0x100000000L));
             K[2 * i + 1] = (temp << 9) | (temp >>> 23);
         }
+//        for(int a:K) {
+//            System.out.println(a);
+//        }
     }
 
-//    public static int[] inputWhitening ()
+    // public static int[] inputWhitening ()
     public static int g(int X) {
         return h(X, S);
     }
-    
+
     public static int h(int X, int[] L) {
         y0 = X & 0xFF;
         y1 = (X >>> 8) & 0xFF;
         y2 = (X >>> 16) & 0xFF;
         y3 = (X >>> 24) & 0xFF;
-        
-//        System.out.println(y0+" "+y1+" "+y2+" "+y3);
+
+        // System.out.println(y0+" "+y1+" "+y2+" "+y3);
 
         if (k == 4) {
-            y0 = TFT.P[1][y0] ^ (L[3] & 0xFF);
-            y1 = TFT.P[0][y1] ^ ((L[3] >>> 8) & 0xFF);
-            y2 = TFT.P[0][y2] ^ ((L[3] >>> 16) & 0xFF);
-            y3 = TFT.P[1][y3] ^ ((L[3] >>> 24) & 0xFF);
+            y0 = TFT.Q[1][y0] ^ (L[3] & 0xFF);
+            y1 = TFT.Q[0][y1] ^ ((L[3] >>> 8) & 0xFF);
+            y2 = TFT.Q[0][y2] ^ ((L[3] >>> 16) & 0xFF);
+            y3 = TFT.Q[1][y3] ^ ((L[3] >>> 24) & 0xFF);
         }
         if (k >= 3) {
-            y0 = TFT.P[1][y0] ^ (L[2] & 0xFF);
-            y1 = TFT.P[1][y1] ^ ((L[2] >>> 8) & 0xFF);
-            y2 = TFT.P[0][y2] ^ ((L[2] >>> 16) & 0xFF);
-            y3 = TFT.P[0][y3] ^ ((L[2] >>> 24) & 0xFF);
-            System.out.println(y0+" "+y1+" "+y2+" "+y3);
+            y0 = TFT.Q[1][y0] ^ (L[2] & 0xFF);
+            y1 = TFT.Q[1][y1] ^ ((L[2] >>> 8) & 0xFF);
+            y2 = TFT.Q[0][y2] ^ ((L[2] >>> 16) & 0xFF);
+            y3 = TFT.Q[0][y3] ^ ((L[2] >>> 24) & 0xFF);
+//            System.out.println(y0 + " " + y1 + " " + y2 + " " + y3);
         }
-        //TODO ersetzen durch Table
-        y0 = q1(q0(q0(y0) ^ (L[1] & 0xFF)) ^ (L[0] & 0xFF));
-        y1 = q0(q0(q1(y1) ^ ((L[1] >>> 8) & 0xFF)) ^ ((L[0] >>> 8) & 0xFF));
-        y2 = q1(q1(q0(y2) ^ ((L[1] >>> 16) & 0xFF)) ^ ((L[0] >>> 16) & 0xFF));
-        y3 = q0(q1(q1(y3) ^ ((L[1] >>> 24) & 0xFF)) ^ ((L[0] >>> 24) & 0xFF));
+        // TODO ersetzen durch Table
+        y0 = TFT.Q[1][TFT.Q[0][TFT.Q[0][y0] ^ (L[1] & 0xFF)] ^ (L[0] & 0xFF)];
+        y1 = TFT.Q[0][TFT.Q[0][TFT.Q[1][y1] ^ ((L[1] >>> 8) & 0xFF)] ^ ((L[0] >>> 8) & 0xFF)];
+        y2 = TFT.Q[1][TFT.Q[1][TFT.Q[0][y2] ^ ((L[1] >>> 16) & 0xFF)] ^ ((L[0] >>> 16) & 0xFF)];
+        y3 = TFT.Q[0][TFT.Q[1][TFT.Q[1][y3] ^ ((L[1] >>> 24) & 0xFF)] ^ ((L[0] >>> 24) & 0xFF)];
 
         z[0] = Utils.multGF(TFT.MDS[0][0], y0, TFT.IRRPOLYNOMTFMDS) ^
                 Utils.multGF(TFT.MDS[0][1], y1, TFT.IRRPOLYNOMTFMDS) ^
@@ -81,38 +85,6 @@ public class Twofish {
         return (z[3] << 24) | (z[2] << 16) | (z[1] << 8) | z[0];
     }
 
-    public static int q0(int x) {
-        a0 = x / 16;
-        b0 = x % 16;
-        a1 = a0 ^ b0;
-        // Rotation um 1 von 4Bits
-        b1 = (a0 ^ (((b0 << 1) & 0xF) | (b0 >> 3)) ^ (8 * a0)) % 16;
-        a2 = TFT.sBoxQ0[0][a1];
-        b2 = TFT.sBoxQ0[1][b1];
-        a3 = a2 ^ b2;
-        b3 = (a2 ^ (((b2 << 1) & 0xF) | (b2 >> 3)) ^ (8 * a2)) % 16;
-        a4 = TFT.sBoxQ0[2][a3];
-        b4 = TFT.sBoxQ0[3][b3];
-
-        return 16 * b4 + a4;
-    }
-
-    public static int q1(int x) {
-        a0 = x / 16;
-        b0 = x % 16;
-        a1 = a0 ^ b0;
-        // Rotation um 1 von 4Bits
-        b1 = (a0 ^ (((b0 << 1) & 0xF) | (b0 >> 3)) ^ (8 * a0)) % 16;
-        a2 = TFT.sBoxQ1[0][a1];
-        b2 = TFT.sBoxQ1[1][b1];
-        a3 = a2 ^ b2;
-        b3 = (a2 ^ (((b2 << 1) & 0xF) | (b2 >> 3)) ^ (8 * a2)) % 16;
-        a4 = TFT.sBoxQ1[2][a3];
-        b4 = TFT.sBoxQ1[3][b3];
-
-        return 16 * b4 + a4;
-    }
-
     public static int[] paddingKey(int[] M) {
         int[] padKey;
         if (M.length < 4) {
@@ -127,7 +99,8 @@ public class Twofish {
         }
         return padKey;
     }
-// Funktoniert
+
+    // Funktoniert
     public static void calcBasisKey(int[] M) {
         k = M.length / 2;
         Me = new int[k];
@@ -152,7 +125,6 @@ public class Twofish {
             Me[x] = Mi[2 * x];
             Mo[x] = Mi[2 * x + 1];
         }
-     
 
         // 8ter Byte Blöcke bilden aus dem eingegebenen Key M
         int m[][] = new int[k][8];
@@ -212,13 +184,13 @@ public class Twofish {
     public static void main(String[] args) {
         int p = 87;
         int q = 19;
-        int M[] = { 1,0,0,0,0,0,1,2 };
+        int M[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
         calcBasisKey(paddingKey(M));
-        
+
         calcKey();
 
-//        for (int k : K) {
-//            System.out.println(k);
-//        }
+         for (int k : K) {
+         System.out.println(k);
+         }
     }
 }
